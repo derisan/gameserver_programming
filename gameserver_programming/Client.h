@@ -1,13 +1,15 @@
 #pragma once
 
-class Client
+#include "Game.h"
+
+class Client : public Game
 {
 public:
 	Client();
 
-	bool Init();
-	void Run();
-	void Shutdown();
+	virtual bool Init() override;
+	virtual void Run() override;
+	virtual void Shutdown() override;
 
 private:
 	bool createWindow(const string& title, int width, int height);

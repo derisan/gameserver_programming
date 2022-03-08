@@ -23,12 +23,25 @@ void GameScene::Enter()
 {
 	GS_LOG("GameScene::Enter");
 
-	//Entity board = Entity(mOwner->GetRegistry().create(), mOwner);
-	Entity board = mOwner->CreateEntity();
-	auto& transform = board.AddComponent<TransformComponent>();
-	transform.Position = Vector2(mOwner->GetScreenWidth() / 2.0f, mOwner->GetScreenHeight() / 2.0f);
-	board.AddComponent<SpriteRendererComponent>(TextureManager::GetTexture("../Assets/board.png"));
-	board.AddTag<Board>();
+	{
+		Entity board = mOwner->CreateEntity();
+		auto& transform = board.AddComponent<TransformComponent>();
+		transform.Position = Vector2(mOwner->GetScreenWidth() / 2.0f, mOwner->GetScreenHeight() / 2.0f);
+		auto& spriteRenderer = board.AddComponent<SpriteRendererComponent>(TextureManager::GetTexture("../Assets/board.png"), 10);
+		spriteRenderer.Width = mOwner->GetScreenWidth();
+		spriteRenderer.Height = mOwner->GetScreenHeight();
+		board.AddTag<ChessBoard>();
+	}
+
+	{
+		Entity piece = mOwner->CreateEntity();
+		auto& transform = piece.AddComponent<TransformComponent>();
+		transform.Position = Vector2(40.0f, 40.0f);
+		auto& spriteRenderer = piece.AddComponent<SpriteRendererComponent>(TextureManager::GetTexture("../Assets/knight.png"));
+		spriteRenderer.Width = mOwner->GetScreenWidth() / 8;
+		spriteRenderer.Height = mOwner->GetScreenHeight() / 8;
+		piece.AddTag<ChessPiece>();
+	}
 }
 
 void GameScene::Exit()
@@ -40,7 +53,7 @@ void GameScene::Exit()
 
 void GameScene::ProcessInput(const uint8* keystate)
 {
-
+	
 }
 
 void GameScene::Update(float deltaTime)
@@ -50,6 +63,10 @@ void GameScene::Update(float deltaTime)
 
 void GameScene::Render(SDL_Renderer* renderer)
 {
+	(mOwner->GetRegistry()).sort<SpriteRendererComponent>([](const auto& lhs, const auto& rhs) {
+		return lhs.DrawOrder < rhs.DrawOrder;
+		});
+
 	auto view = (mOwner->GetRegistry()).view<SpriteRendererComponent>();
 
 	for (auto entity : view)
@@ -59,17 +76,8 @@ void GameScene::Render(SDL_Renderer* renderer)
 		auto& transform = e.GetComponent<TransformComponent>();
 		auto& spriteRenderer = e.GetComponent<SpriteRendererComponent>();
 
-		int texWidth = spriteRenderer.Width;
-		int texHeight = spriteRenderer.Height;
-
-		if (e.HasComponent<Board>())
-		{
-			texWidth = mOwner->GetScreenWidth();
-			texHeight = mOwner->GetScreenHeight();
-		}
-
 		Systems::DrawSprite(transform.Position, transform.Rotation, transform.Scale,
-			spriteRenderer.Texture, texWidth, texHeight, renderer);
+			spriteRenderer.Texture, spriteRenderer.Width, spriteRenderer.Height, renderer);
 	}
 }
 

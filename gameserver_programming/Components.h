@@ -12,10 +12,11 @@ struct TransformComponent
 
 struct SpriteRendererComponent
 {
-	SpriteRendererComponent(SDL_Texture* texture = nullptr);
+	SpriteRendererComponent(SDL_Texture* texture = nullptr, int drawOrder = 100);
 
 	SDL_Texture* Texture;
 	int Width;
 	int Height;
+	int DrawOrder;
 };
 

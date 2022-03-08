@@ -17,11 +17,9 @@ TransformComponent::TransformComponent(const Vector2& position, float rotation /
 
 }
 
-SpriteRendererComponent::SpriteRendererComponent(SDL_Texture* texture /*= nullptr*/)
+SpriteRendererComponent::SpriteRendererComponent(SDL_Texture* texture /*= nullptr*/, int drawOrder /*= 100*/)
 	: Texture(texture)
+	, DrawOrder(drawOrder)
 {
-	if (texture)
-	{
-		SDL_QueryTexture(texture, nullptr, nullptr, &Width, &Height);
-	}
+	SDL_QueryTexture(texture, nullptr, nullptr, &Width, &Height);
 }

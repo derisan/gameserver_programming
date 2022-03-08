@@ -1,4 +1,4 @@
 #pragma once
 
-struct Board {};
-struct Piece {};
+struct ChessBoard {};
+struct ChessPiece {};

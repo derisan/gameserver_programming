@@ -1,6 +1,17 @@
 #include "PCH.h"
 
+#include "Client.h"
+
 int main()
 {
-	GS_LOG("Hello, world!");
+	unique_ptr<Client> client = std::make_unique<Client>();
+
+	bool success = client->Init();
+
+	if (success)
+	{
+		client->Run();
+	}
+
+	client->Shutdown();
 }

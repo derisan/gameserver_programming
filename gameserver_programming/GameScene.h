@@ -2,6 +2,8 @@
 
 #include "Scene.h"
 
+#include "Entity.h"
+
 class GameScene :
     public Scene
 {
@@ -20,5 +22,7 @@ private:
 
 private:
     static GameScene sInstance;
+
+    Entity mAsteroid;
 };
 

@@ -14,10 +14,12 @@
 #pragma comment(lib, "zlib")
 #pragma comment(lib, "spdlog")
 
+
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 
+#include "Math.h"
 #include <Windows.h>
 #include <WinSock2.h>
 #include <WS2tcpip.h>

@@ -1,1 +1,21 @@
 #pragma once
+
+struct TransformComponent
+{
+	TransformComponent(float x = 0.0f, float y = 0.0f, float rotation = 0.0f, float scale = 1.0f);
+	TransformComponent(const Vector2& position, float rotation = 0.0f, float scale = 1.0f);
+
+	Vector2 Position;
+	float Rotation;
+	float Scale;
+};
+
+struct SpriteRendererComponent
+{
+	SpriteRendererComponent(SDL_Texture* texture = nullptr);
+
+	SDL_Texture* Texture;
+	int Width;
+	int Height;
+};
+

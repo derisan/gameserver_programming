@@ -15,7 +15,7 @@ public:
 	virtual void Update(float deltaTime) {}
 	virtual void Render(SDL_Renderer* renderer) {}
 
-private:
+protected:
 	Client* mOwner;
 };
 

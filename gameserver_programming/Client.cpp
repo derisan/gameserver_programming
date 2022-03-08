@@ -2,6 +2,7 @@
 #include "Client.h"
 
 #include "GameScene.h"
+#include "TextureManager.h"
 
 Client::Client()
 	: mWindow(nullptr)
@@ -30,6 +31,8 @@ bool Client::Init()
 		GS_ASSERT(false, "Failed to create intial scene.");
 		return false;
 	}
+
+	TextureManager::Init(mRenderer);
 
 	mTicksCount = SDL_GetTicks();
 

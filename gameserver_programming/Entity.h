@@ -5,14 +5,14 @@
 class Entity
 {
 public:
-	Entity(entt::entity handle, Game* game)
+	Entity(entt::entity handle = entt::null, Game* game = nullptr)
 		: mEntityHandle(handle)
 		, mGame(game) {}
 
 	template<typename T, typename... Args>
 	T& AddComponent(Args&&... args)
 	{
-		ASSERT(!HasComponent<T>(), "Entity already has component.");
+		GS_ASSERT(!HasComponent<T>(), "Entity already has component.");
 		T& component = mGame->mRegistry.emplace<T>(mEntityHandle, std::forward<Args>(args)...);
 		return component;
 	}
@@ -20,14 +20,14 @@ public:
 	template<typename T>
 	void AddTag()
 	{
-		ASSERT(!HasComponent<T>(), "Entity already has tag.");
+		GS_ASSERT(!HasComponent<T>(), "Entity already has tag.");
 		mGame->mRegistry.emplace<T>(mEntityHandle);
 	}
 
 	template<typename T>
 	T& GetComponent()
 	{
-		ASSERT(HasComponent<T>(), "Entity does not have component.");
+		GS_ASSERT(HasComponent<T>(), "Entity does not have component.");
 		T& component = mGame->mRegistry.get<T>(mEntityHandle);
 		return component;
 	}
@@ -41,7 +41,7 @@ public:
 	template<typename T>
 	void RemoveComponent()
 	{
-		ASSERT(HasComponent<T>(), "Entity does not have component.");
+		GS_ASSERT(HasComponent<T>(), "Entity does not have component.");
 		mGame->mRegistry.remove<T>(mEntityHandle);
 	}
 
@@ -59,7 +59,7 @@ public:
 	}
 
 private:
-	entt::entity mEntityHandle = entt::null;
-	Game* mGame = nullptr;
+	entt::entity mEntityHandle;
+	Game* mGame;
 };
 

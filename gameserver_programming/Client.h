@@ -13,6 +13,11 @@ public:
 	virtual void Run() override;
 	virtual void Shutdown() override;
 
+	int GetScreenWidth() const { return mScreenWidth; }
+	int GetScreenHeight() const { return mScreenHeight; }
+
+	Entity CreateEntity();
+
 private:
 	bool createWindow(const string& title, int width, int height);
 	bool createScene();
@@ -30,5 +35,8 @@ private:
 	bool mbRunning;
 
 	Scene* mActiveScene;
+
+	int mScreenWidth;
+	int mScreenHeight;
 };
 

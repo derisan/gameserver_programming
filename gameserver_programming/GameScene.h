@@ -22,7 +22,5 @@ private:
 
 private:
     static GameScene sInstance;
-
-    Entity mAsteroid;
 };
 

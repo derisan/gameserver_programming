@@ -3,6 +3,7 @@
 
 #include "GameScene.h"
 #include "TextureManager.h"
+#include "Entity.h"
 
 Client::Client()
 	: mWindow(nullptr)
@@ -10,13 +11,15 @@ Client::Client()
 	, mTicksCount(0)
 	, mbRunning(true)
 	, mActiveScene(nullptr)
+	, mScreenWidth(0)
+	, mScreenHeight(0)
 {
 
 }
 
 bool Client::Init()
 {
-	bool success = createWindow("GameServerProgramming", 640, 480);
+	bool success = createWindow("GameServerProgramming", 640, 640);
 
 	if (!success)
 	{
@@ -61,8 +64,17 @@ void Client::Shutdown()
 	SDL_Quit();
 }
 
+Entity Client::CreateEntity()
+{
+	Entity e(GetRegistry().create(), this);
+	return e;
+}
+
 bool Client::createWindow(const string& title, int width, int height)
 {
+	mScreenWidth = width;
+	mScreenHeight = height;
+
 	if (SDL_Init(SDL_INIT_VIDEO) != 0)
 	{
 		GS_LOG("Unable to initialize SDL: {0}", SDL_GetError());
@@ -71,7 +83,7 @@ bool Client::createWindow(const string& title, int width, int height)
 
 	if (IMG_Init(IMG_INIT_PNG) == 0)
 	{
-		GS_LOG("Unable to initialize SDL_image: {0}", SDL_GetError());
+		GS_LOG("Unable to initialize SDL_image: {0}", IMG_GetError());
 		return false;
 	}
 

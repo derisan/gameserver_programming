@@ -2,6 +2,8 @@
 
 #include "Game.h"
 
+class Scene;
+
 class Client : public Game
 {
 public:
@@ -13,6 +15,7 @@ public:
 
 private:
 	bool createWindow(const string& title, int width, int height);
+	bool createScene();
 
 	void processInput();
 	void update();
@@ -25,5 +28,7 @@ private:
 	uint32 mTicksCount;
 
 	bool mbRunning;
+
+	Scene* mActiveScene;
 };
 

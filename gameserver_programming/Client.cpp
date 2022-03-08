@@ -1,11 +1,14 @@
 #include "PCH.h"
 #include "Client.h"
 
+#include "GameScene.h"
+
 Client::Client()
 	: mWindow(nullptr)
 	, mRenderer(nullptr)
 	, mTicksCount(0)
 	, mbRunning(true)
+	, mActiveScene(nullptr)
 {
 
 }
@@ -20,7 +23,17 @@ bool Client::Init()
 		return false;
 	}
 
+	success = createScene();
+
+	if (!success)
+	{
+		GS_ASSERT(false, "Failed to create intial scene.");
+		return false;
+	}
+
 	mTicksCount = SDL_GetTicks();
+
+	mActiveScene->Enter();
 
 	return true;
 }
@@ -37,6 +50,11 @@ void Client::Run()
 
 void Client::Shutdown()
 {
+	if (mActiveScene)
+	{
+		mActiveScene->Exit();
+	}
+
 	SDL_Quit();
 }
 
@@ -71,6 +89,14 @@ bool Client::createWindow(const string& title, int width, int height)
 	return true;
 }
 
+bool Client::createScene()
+{
+	GameScene::StaticCreate(this);
+	mActiveScene = GameScene::Get();
+
+	return true;
+}
+
 void Client::processInput()
 {
 	SDL_Event event;
@@ -84,10 +110,15 @@ void Client::processInput()
 		}
 	}
 
-	const uint8_t* state = SDL_GetKeyboardState(NULL);
-	if (state[SDL_SCANCODE_ESCAPE])
+	const uint8_t* keystate = SDL_GetKeyboardState(NULL);
+	if (keystate[SDL_SCANCODE_ESCAPE])
 	{
 		mbRunning = false;
+	}
+
+	if (mActiveScene)
+	{
+		mActiveScene->ProcessInput(keystate);
 	}
 }
 
@@ -103,10 +134,21 @@ void Client::update()
 
 	mTicksCount = SDL_GetTicks();
 	
-	GS_LOG("Delta Time: {0}", deltaTime);
+	if (mActiveScene)
+	{
+		mActiveScene->Update(deltaTime);
+	}
 }
 
 void Client::render()
 {
+	SDL_SetRenderDrawColor(mRenderer, 0, 0, 0, 255);
+	SDL_RenderClear(mRenderer);
 
+	if (mActiveScene)
+	{
+		mActiveScene->Render(mRenderer);
+	}
+
+	SDL_RenderPresent(mRenderer);
 }

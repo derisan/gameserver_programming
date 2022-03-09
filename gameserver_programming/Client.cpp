@@ -4,6 +4,7 @@
 #include "GameScene.h"
 #include "TextureManager.h"
 #include "Entity.h"
+#include "Input.h"
 
 Client::Client()
 	: mWindow(nullptr)
@@ -19,6 +20,8 @@ Client::Client()
 
 bool Client::Init()
 {
+	Input::Init();
+
 	bool success = createWindow("GameServerProgramming", 640, 640);
 
 	if (!success)
@@ -60,6 +63,8 @@ void Client::Shutdown()
 	{
 		mActiveScene->Exit();
 	}
+
+	TextureManager::Shutdown();
 
 	SDL_Quit();
 }
@@ -126,6 +131,9 @@ void Client::processInput()
 	}
 
 	const uint8_t* keystate = SDL_GetKeyboardState(NULL);
+
+	Input::Update(keystate);
+
 	if (keystate[SDL_SCANCODE_ESCAPE])
 	{
 		mbRunning = false;
@@ -133,7 +141,7 @@ void Client::processInput()
 
 	if (mActiveScene)
 	{
-		mActiveScene->ProcessInput(keystate);
+		mActiveScene->ProcessInput();
 	}
 }
 

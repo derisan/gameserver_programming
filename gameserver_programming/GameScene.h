@@ -13,7 +13,7 @@ public:
 
     virtual void Enter() override;
     virtual void Exit() override;
-    virtual void ProcessInput(const uint8* keystate) override;
+    virtual void ProcessInput() override;
     virtual void Update(float deltaTime) override;
     virtual void Render(SDL_Renderer* renderer) override;
 
@@ -22,5 +22,9 @@ private:
 
 private:
     static GameScene sInstance;
+
+    Entity mPiece;
+
+    int mChessPieceOffset;
 };
 

@@ -6,6 +6,7 @@
 #include "Systems.h"
 #include "TextureManager.h"
 #include "Tags.h"
+#include "Input.h"
 
 GameScene GameScene::sInstance;
 
@@ -34,13 +35,14 @@ void GameScene::Enter()
 	}
 
 	{
-		Entity piece = mOwner->CreateEntity();
-		auto& transform = piece.AddComponent<TransformComponent>();
-		transform.Position = Vector2(40.0f, 40.0f);
-		auto& spriteRenderer = piece.AddComponent<SpriteRendererComponent>(TextureManager::GetTexture("../Assets/knight.png"));
+		mPiece = mOwner->CreateEntity();
+		auto& spriteRenderer = mPiece.AddComponent<SpriteRendererComponent>(TextureManager::GetTexture("../Assets/knight.png"));
 		spriteRenderer.Width = mOwner->GetScreenWidth() / 8;
 		spriteRenderer.Height = mOwner->GetScreenHeight() / 8;
-		piece.AddTag<ChessPiece>();
+		auto& transform = mPiece.AddComponent<TransformComponent>();
+		transform.Position = Vector2(spriteRenderer.Width / 2.0f, spriteRenderer.Height / 2.0f);
+		mChessPieceOffset = spriteRenderer.Width / 2;
+		mPiece.AddTag<ChessPiece>();
 	}
 }
 
@@ -51,14 +53,50 @@ void GameScene::Exit()
 	mOwner->GetRegistry().clear();
 }
 
-void GameScene::ProcessInput(const uint8* keystate)
+void GameScene::ProcessInput()
 {
-	
+	if (Input::IsButtonPressed(SDL_SCANCODE_LEFT))
+	{
+		auto& transform = mPiece.GetComponent<TransformComponent>();
+
+		Systems::Move(&transform.Position, Vector2(-mOwner->GetScreenWidth() / 8.0f, 0.0f));
+	}
+
+	if (Input::IsButtonPressed(SDL_SCANCODE_RIGHT))
+	{
+		auto& transform = mPiece.GetComponent<TransformComponent>();
+
+		Systems::Move(&transform.Position, Vector2(mOwner->GetScreenWidth() / 8.0f, 0.0f));
+	}
+
+	if (Input::IsButtonPressed(SDL_SCANCODE_UP))
+	{
+		auto& transform = mPiece.GetComponent<TransformComponent>();
+
+		Systems::Move(&transform.Position, Vector2(0.0f, -mOwner->GetScreenHeight() / 8.0f));
+	}
+
+	if (Input::IsButtonPressed(SDL_SCANCODE_DOWN))
+	{
+		auto& transform = mPiece.GetComponent<TransformComponent>();
+
+		Systems::Move(&transform.Position, Vector2(0.0f, mOwner->GetScreenHeight() / 8.0f));
+	}
 }
 
 void GameScene::Update(float deltaTime)
 {
+	auto view = (mOwner->GetRegistry()).view<TransformComponent>();
 
+	const int screenWidth = mOwner->GetScreenWidth();
+	const int screenHeight = mOwner->GetScreenHeight();
+
+	for (auto entity : view)
+	{
+		auto& transform = view.get<TransformComponent>(entity);
+
+		Systems::Reposition(&transform.Position, screenWidth, screenHeight, mChessPieceOffset);
+	}
 }
 
 void GameScene::Render(SDL_Renderer* renderer)
@@ -83,6 +121,7 @@ void GameScene::Render(SDL_Renderer* renderer)
 
 GameScene::GameScene(Client* client)
 	: Scene(client)
+	, mChessPieceOffset(0)
 {
 
 }

@@ -11,3 +11,15 @@ void Systems::DrawSprite(const Vector2& position, const float rotation, const fl
 
 	SDL_RenderCopyEx(renderer, texture, nullptr, &r, -rotation, nullptr, SDL_FLIP_NONE);
 }
+
+void Systems::Move(Vector2* from, const Vector2& dist)
+{
+	from->x += dist.x;
+	from->y += dist.y;
+}
+
+void Systems::Reposition(Vector2* outPosition, int borderX, int borderY, int offset /*= 0.0f*/)
+{
+	outPosition->x = Math::Clamp(outPosition->x, static_cast<float>(offset), static_cast<float>(borderX - offset));
+	outPosition->y = Math::Clamp(outPosition->y, static_cast<float>(offset), static_cast<float>(borderY - offset));
+}

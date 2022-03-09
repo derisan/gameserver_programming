@@ -11,7 +11,7 @@ public:
 
 	virtual void Enter() {}
 	virtual void Exit() {}
-	virtual void ProcessInput(const uint8* keystate) {}
+	virtual void ProcessInput() {}
 	virtual void Update(float deltaTime) {}
 	virtual void Render(SDL_Renderer* renderer) {}
 

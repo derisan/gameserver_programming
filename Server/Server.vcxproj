@@ -13,8 +13,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{c33b6d4d-4993-41b6-8f76-e8e4f5a94476}</ProjectGuid>
-    <RootNamespace>Client</RootNamespace>
+    <ProjectGuid>{019d4841-c7f5-4d91-a008-f0cf7f07dd88}</ProjectGuid>
+    <RootNamespace>Server</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -63,14 +63,14 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>..\vendor\include\;..\gameserver_programming\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\vendor\include\;..\gameserver_programming\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>ClientPCH.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>ServerPCH.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\vendor\lib\debug\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\vendor\lib\debug\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
       <Command>copy /Y "..\vendor\bin\debug\" "$(TargetDir)"</Command>
@@ -85,9 +85,9 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>..\vendor\include\;..\gameserver_programming\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\vendor\include\;..\gameserver_programming\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>ClientPCH.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>ServerPCH.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -101,18 +101,13 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Client.cpp" />
-    <ClCompile Include="ClientMain.cpp" />
-    <ClCompile Include="ClientPCH.cpp">
+    <ClCompile Include="ServerMain.cpp" />
+    <ClCompile Include="ServerPCH.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="GameScene.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Client.h" />
-    <ClInclude Include="ClientPCH.h" />
-    <ClInclude Include="GameScene.h" />
+    <ClInclude Include="ServerPCH.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\gameserver_programming\gameserver_programming.vcxproj">

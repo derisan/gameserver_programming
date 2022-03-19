@@ -24,5 +24,8 @@ struct SpriteRendererComponent
 
 struct IDComponent
 {
+	IDComponent();
+	IDComponent(uint64 id);
+
 	GSID ID;
 };

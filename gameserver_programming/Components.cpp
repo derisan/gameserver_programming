@@ -23,3 +23,15 @@ SpriteRendererComponent::SpriteRendererComponent(SDL_Texture* texture /*= nullpt
 {
 	SDL_QueryTexture(texture, nullptr, nullptr, &Width, &Height);
 }
+
+IDComponent::IDComponent()
+	: ID()
+{
+
+}
+
+IDComponent::IDComponent(uint64 id)
+	: ID(id)
+{
+
+}

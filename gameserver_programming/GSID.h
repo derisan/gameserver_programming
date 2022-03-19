@@ -6,6 +6,8 @@ class GSID
 {
 public:
 	GSID();
+	GSID(uint64 id)
+		: mID(id) {}
 
 	operator uint64() { return mID; }
 	operator const uint64() const { return mID; }

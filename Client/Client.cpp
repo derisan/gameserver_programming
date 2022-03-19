@@ -17,6 +17,7 @@ Client::Client()
 
 bool Client::Init()
 {
+	SocketUtil::Init();
 	Input::Init();
 
 	bool success = createWindow("GameServerProgramming", SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -64,6 +65,8 @@ void Client::Shutdown()
 	TextureManager::Shutdown();
 
 	SDL_Quit();
+
+	SocketUtil::Shutdown();
 }
 
 Entity Client::CreateEntity()

@@ -5,9 +5,8 @@ bool Server::Init()
 {
 	SocketUtil::Init();
 
-	initGameWorld();
-
 	waitPlayer();
+	initGameWorld();
 
 	return true;
 }
@@ -70,5 +69,13 @@ void Server::initGameWorld()
 	board.AddComponent<TransformComponent>();
 
 	Entity piece = createEntity();
-	piece.AddComponent<TransformComponent>();
+	auto& transform = piece.AddComponent<TransformComponent>();
+	auto& id = piece.GetComponent<IDComponent>();
+
+	MemoryStream buffer;
+	buffer.WriteUInt64(id.ID);
+	buffer.WriteInt('PIEC');
+	buffer.WriteVector2(transform.Position);
+
+	mClientSocket->Send(&buffer, sizeof(MemoryStream));
 }

@@ -19,6 +19,19 @@ void GameScene::Enter()
 {
 	GS_LOG("GameScene::Enter");
 
+	mClientSocket = SocketUtil::CreateTCPSocket();
+
+	SocketAddress serveraddr("127.0.0.1", SERVER_PORT);
+
+	int retVal = mClientSocket->Connect(serveraddr);
+
+	if (retVal == SOCKET_ERROR)
+	{
+		GS_ASSERT(false, "ASSERTION FAILED");
+	}
+
+	mClientSocket->SetNonBlockingMode(1);
+
 	{
 		Entity board = mOwner->CreateEntity();
 		auto& id = board.AddComponent<IDComponent>();
@@ -45,6 +58,8 @@ void GameScene::Enter()
 void GameScene::Exit()
 {
 	GS_LOG("GameScene::Exit");
+
+	mClientSocket = nullptr;
 
 	mOwner->GetRegistry().clear();
 }
@@ -95,6 +110,27 @@ void GameScene::Update(float deltaTime)
 		auto& spriteRenderer = e.GetComponent<SpriteRendererComponent>();
 		
 		Systems::ClampPosition(&transform.Position, screenWidth - spriteRenderer.Width, screenHeight - spriteRenderer.Height);
+	}
+
+	MemoryStream buffer;
+	mClientSocket->Recv(&buffer, sizeof(buffer));
+
+	if (buffer.GetLength() > 0)
+	{
+		buffer.SetLength(0);
+
+		uint64 id = 0;
+		buffer.ReadUInt64(&id);
+
+		int cls = 0;
+		buffer.ReadInt(&cls);
+
+		Vector2 position;
+		buffer.ReadVector2(&position);
+
+		GS_LOG("ID: {0}", id);
+		GS_LOG("CLASS: {0}", cls);
+		GS_LOG("POSITION: {0} {1}", position.x, position.y);
 	}
 }
 

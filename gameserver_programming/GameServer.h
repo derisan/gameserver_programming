@@ -16,3 +16,4 @@
 #include "GSID.h"
 #include "Input.h"
 #include "TextureManager.h"
+#include "MemoryStream.h"

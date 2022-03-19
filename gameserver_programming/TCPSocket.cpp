@@ -81,9 +81,14 @@ int TCPSocket::Recv(void* outData, int len, int flags /*= 0*/)
 
 	if (read == SOCKET_ERROR)
 	{
-		SocketUtil::ReportError(L"TCPSocket::Recv");
+		//SocketUtil::ReportError(L"TCPSocket::Recv");
 		return SOCKET_ERROR;
 	}
 
 	return read;
+}
+
+void TCPSocket::SetNonBlockingMode(u_long mode)
+{
+	ioctlsocket(mSocket, FIONBIO, &mode);
 }

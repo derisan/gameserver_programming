@@ -22,6 +22,4 @@ void Systems::ClampPosition(Vector2* outPosition, int borderX, int borderY)
 {
 	outPosition->x = Math::Clamp(outPosition->x, 0.0f, static_cast<float>(borderX));
 	outPosition->y = Math::Clamp(outPosition->y, 0.0f, static_cast<float>(borderY));
-
-	GS_LOG("{0} {1}", outPosition->x, outPosition->y);
 }

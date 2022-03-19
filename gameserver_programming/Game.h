@@ -17,7 +17,7 @@ public:
 
 	void RemoveEntity(const GSID& id);
 
-	uint32 GetNumEntites() const { return mEntities.size(); }
+	size_t GetNumEntites() const { return mEntities.size(); }
 
 private:
 	entt::registry mRegistry;

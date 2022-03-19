@@ -23,4 +23,6 @@ private:
     static GameScene sInstance;
 
     Entity mPiece;
+
+    TCPSocketPtr mClientSocket;
 };

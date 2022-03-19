@@ -1,5 +1,7 @@
 #pragma once
 
+#include "GSID.h"
+
 struct TransformComponent
 {
 	TransformComponent(float x = 0.0f, float y = 0.0f, float rotation = 0.0f, float scale = 1.0f);
@@ -20,3 +22,7 @@ struct SpriteRendererComponent
 	int DrawOrder;
 };
 
+struct IDComponent
+{
+	GSID ID;
+};

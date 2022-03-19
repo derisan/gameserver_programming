@@ -1,10 +1,7 @@
-#include "PCH.h"
+#include "ClientPCH.h"
 #include "Client.h"
 
 #include "GameScene.h"
-#include "TextureManager.h"
-#include "Entity.h"
-#include "Input.h"
 
 Client::Client()
 	: mWindow(nullptr)

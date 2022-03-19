@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Game.h"
-
 class Scene;
 
 class Client : public Game

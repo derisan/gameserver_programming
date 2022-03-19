@@ -1,12 +1,7 @@
-#include "PCH.h"
+#include "ClientPCH.h"
 #include "GameScene.h"
 
 #include "Client.h"
-#include "Components.h"
-#include "Systems.h"
-#include "TextureManager.h"
-#include "Tags.h"
-#include "Input.h"
 
 GameScene GameScene::sInstance;
 
@@ -26,6 +21,8 @@ void GameScene::Enter()
 
 	{
 		Entity board = mOwner->CreateEntity();
+		auto& id = board.AddComponent<IDComponent>();
+		GS_LOG("BOARD ID: {0}", id.ID);
 		auto& transform = board.AddComponent<TransformComponent>();
 		transform.Position = Vector2(mOwner->GetScreenWidth() / 2.0f, mOwner->GetScreenHeight() / 2.0f);
 		auto& spriteRenderer = board.AddComponent<SpriteRendererComponent>(TextureManager::GetTexture("../Assets/board.png"), 10);
@@ -36,6 +33,8 @@ void GameScene::Enter()
 
 	{
 		mPiece = mOwner->CreateEntity();
+		auto& id = mPiece.AddComponent<IDComponent>();
+		GS_LOG("PIECE ID: {0}", id.ID);
 		auto& spriteRenderer = mPiece.AddComponent<SpriteRendererComponent>(TextureManager::GetTexture("../Assets/knight.png"));
 		spriteRenderer.Width = mOwner->GetScreenWidth() / 8;
 		spriteRenderer.Height = mOwner->GetScreenHeight() / 8;

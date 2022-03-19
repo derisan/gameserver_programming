@@ -17,6 +17,7 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
+#define SERVER_PORT (9000)
 
 #include "GSMath.h"
 #include <Windows.h>

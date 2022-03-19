@@ -5,6 +5,8 @@ bool Server::Init()
 {
 	SocketUtil::Init();
 
+	initGameWorld();
+
 	waitPlayer();
 
 	return true;
@@ -28,7 +30,9 @@ void Server::Shutdown()
 Entity Server::createEntity()
 {
 	Entity e(GetRegistry().create(), this);
-	e.AddComponent<IDComponent>();
+	auto& id = e.AddComponent<IDComponent>();
+
+	RegisterEntity(id.ID, e);
 
 	return e;
 }

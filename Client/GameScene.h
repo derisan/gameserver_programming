@@ -23,7 +23,4 @@ private:
     static GameScene sInstance;
 
     Entity mPiece;
-
-    int mChessPieceOffset;
 };
-

@@ -18,6 +18,8 @@
 #define NOMINMAX
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #define SERVER_PORT (9000)
+#define SCREEN_WIDTH (640)
+#define SCREEN_HEIGHT (640)
 
 #include "GSMath.h"
 #include <Windows.h>

@@ -19,7 +19,7 @@ bool Client::Init()
 {
 	Input::Init();
 
-	bool success = createWindow("GameServerProgramming", 640, 640);
+	bool success = createWindow("GameServerProgramming", SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	if (!success)
 	{

@@ -14,7 +14,7 @@ void Server::Run()
 {
 	while (true)
 	{
-		
+
 	}
 }
 
@@ -23,6 +23,14 @@ void Server::Shutdown()
 	mClientSocket = nullptr;
 
 	SocketUtil::Shutdown();
+}
+
+Entity Server::createEntity()
+{
+	Entity e(GetRegistry().create(), this);
+	e.AddComponent<IDComponent>();
+
+	return e;
 }
 
 void Server::waitPlayer()
@@ -50,4 +58,13 @@ void Server::waitPlayer()
 	mClientSocket = listenSocket->Accept(&clientAddr);
 
 	GS_LOG("Client Connected: {0}", clientAddr.ToString());
+}
+
+void Server::initGameWorld()
+{
+	Entity board = createEntity();
+	board.AddComponent<TransformComponent>();
+
+	Entity piece = createEntity();
+	piece.AddComponent<TransformComponent>();
 }

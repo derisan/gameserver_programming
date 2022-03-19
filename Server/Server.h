@@ -10,7 +10,10 @@ public:
 	virtual void Shutdown() override;
 
 private:
+	Entity createEntity();
+
 	void waitPlayer();
+	void initGameWorld();
 
 private:
 	TCPSocketPtr mClientSocket;

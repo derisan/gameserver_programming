@@ -58,6 +58,9 @@
     <ClCompile Include="GSID.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
+    <ClCompile Include="MemoryStream.cpp">
+      <Filter>Source Files\Network</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PCH.h">
@@ -110,6 +113,9 @@
     </ClInclude>
     <ClInclude Include="GameServer.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryStream.h">
+      <Filter>Source Files\Network</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

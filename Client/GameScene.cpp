@@ -24,7 +24,6 @@ void GameScene::Enter()
 		auto& id = board.AddComponent<IDComponent>();
 		GS_LOG("BOARD ID: {0}", id.ID);
 		auto& transform = board.AddComponent<TransformComponent>();
-		transform.Position = Vector2(mOwner->GetScreenWidth() / 2.0f, mOwner->GetScreenHeight() / 2.0f);
 		auto& spriteRenderer = board.AddComponent<SpriteRendererComponent>(TextureManager::GetTexture("../Assets/board.png"), 10);
 		spriteRenderer.Width = mOwner->GetScreenWidth();
 		spriteRenderer.Height = mOwner->GetScreenHeight();
@@ -39,8 +38,6 @@ void GameScene::Enter()
 		spriteRenderer.Width = mOwner->GetScreenWidth() / 8;
 		spriteRenderer.Height = mOwner->GetScreenHeight() / 8;
 		auto& transform = mPiece.AddComponent<TransformComponent>();
-		transform.Position = Vector2(spriteRenderer.Width / 2.0f, spriteRenderer.Height / 2.0f);
-		mChessPieceOffset = spriteRenderer.Width / 2;
 		mPiece.AddTag<ChessPiece>();
 	}
 }
@@ -85,16 +82,19 @@ void GameScene::ProcessInput()
 
 void GameScene::Update(float deltaTime)
 {
-	auto view = (mOwner->GetRegistry()).view<TransformComponent>();
+	auto view = (mOwner->GetRegistry()).view<ChessPiece>();
 
 	const int screenWidth = mOwner->GetScreenWidth();
 	const int screenHeight = mOwner->GetScreenHeight();
 
 	for (auto entity : view)
 	{
-		auto& transform = view.get<TransformComponent>(entity);
+		Entity e = Entity(entity, mOwner);
 
-		Systems::Reposition(&transform.Position, screenWidth, screenHeight, mChessPieceOffset);
+		auto& transform = e.GetComponent<TransformComponent>();
+		auto& spriteRenderer = e.GetComponent<SpriteRendererComponent>();
+		
+		Systems::ClampPosition(&transform.Position, screenWidth - spriteRenderer.Width, screenHeight - spriteRenderer.Height);
 	}
 }
 
@@ -120,7 +120,6 @@ void GameScene::Render(SDL_Renderer* renderer)
 
 GameScene::GameScene(Client* client)
 	: Scene(client)
-	, mChessPieceOffset(0)
 {
 
 }

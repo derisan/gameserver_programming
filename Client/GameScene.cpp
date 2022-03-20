@@ -4,6 +4,7 @@
 #include "Client.h"
 
 GameScene GameScene::sInstance;
+extern string gServerAddr;
 
 void GameScene::StaticCreate(Client* client)
 {
@@ -21,7 +22,7 @@ void GameScene::Enter()
 
 	mClientSocket = SocketUtil::CreateTCPSocket();
 
-	SocketAddress serveraddr("127.0.0.1", SERVER_PORT);
+	SocketAddress serveraddr(gServerAddr, SERVER_PORT);
 
 	int retVal = mClientSocket->Connect(serveraddr);
 

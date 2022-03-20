@@ -72,7 +72,7 @@ void GameScene::ProcessInput()
 		direction.y += 1.0f;
 	}
 
-	if (isPressed)
+	if (isPressed && mMyPiece)
 	{
 		MemoryStream packet;
 

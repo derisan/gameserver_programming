@@ -69,12 +69,6 @@ void Client::Shutdown()
 	SocketUtil::Shutdown();
 }
 
-Entity Client::CreateEntity()
-{
-	Entity e(GetRegistry().create(), this);
-	return e;
-}
-
 bool Client::createWindow(const string& title, int width, int height)
 {
 	mScreenWidth = width;

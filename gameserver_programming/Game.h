@@ -19,6 +19,8 @@ public:
 
 	size_t GetNumEntites() const { return mEntities.size(); }
 
+	entt::entity GetEntityByID(const GSID& id) const;
+
 private:
 	entt::registry mRegistry;
 

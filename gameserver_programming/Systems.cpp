@@ -18,6 +18,12 @@ void Systems::Move(Vector2* from, const Vector2& dist)
 	from->y += dist.y;
 }
 
+void Systems::MoveTo(Vector2* from, const Vector2& to)
+{
+	from->x = to.x;
+	from->y = to.y;
+}
+
 void Systems::ClampPosition(Vector2* outPosition, int borderX, int borderY)
 {
 	outPosition->x = Math::Clamp(outPosition->x, 0.0f, static_cast<float>(borderX));

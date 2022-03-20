@@ -19,10 +19,12 @@ public:
 private:
     GameScene(Client* client = nullptr);
 
+    void processPacket(MemoryStream* outPacket);
+
 private:
     static GameScene sInstance;
 
-    Entity mPiece;
-
     TCPSocketPtr mClientSocket;
+
+    Entity mMyPiece;
 };

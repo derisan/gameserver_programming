@@ -28,3 +28,18 @@ void Game::RemoveEntity(const GSID& id)
 		GS_LOG("Entity ID[{0}] does not exist!", id);
 	}
 }
+
+entt::entity Game::GetEntityByID(const GSID& id) const
+{
+	auto iter = mEntities.find(id);
+
+	if (iter != mEntities.end())
+	{
+		return iter->second;
+	}
+	else
+	{
+		GS_LOG("Entity[{0}] does not exist.", id);
+		return entt::null;
+	}
+}

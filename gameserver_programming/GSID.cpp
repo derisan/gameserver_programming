@@ -5,7 +5,7 @@
 
 static std::random_device sRandomDevice;
 static std::mt19937_64 eng(sRandomDevice());
-static std::uniform_int_distribution<uint64> sUID;
+static std::uniform_int_distribution<uint64> sUID(1023);
 
 GSID::GSID()
 	: mID(sUID(eng))

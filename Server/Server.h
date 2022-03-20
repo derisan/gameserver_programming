@@ -2,6 +2,9 @@
 
 #include "Game.h"
 
+constexpr int kPieceWidth = 80;
+constexpr int kPieceHeight = 80;
+
 class Server : public Game
 {
 public:
@@ -18,4 +21,6 @@ private:
 private:
 	TCPSocketPtr mClientSocket;
 };
+
+int GetChessBoardIndex(int position);
 

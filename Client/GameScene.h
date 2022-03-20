@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Scene.h"
-
 #include "Entity.h"
 
 class GameScene :
@@ -20,11 +19,12 @@ public:
 private:
     GameScene(Client* client = nullptr);
 
+    void processPacket(MemoryStream* outPacket);
+
 private:
     static GameScene sInstance;
 
-    Entity mPiece;
+    TCPSocketPtr mClientSocket;
 
-    int mChessPieceOffset;
+    Entity mMyPiece;
 };
-

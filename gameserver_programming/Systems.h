@@ -8,7 +8,9 @@ public:
 
 	static void Move(Vector2* from, const Vector2& dist);
 
-	static void Reposition(Vector2* outPosition, int borderX, int borderY, int offset = 0.0f);
+	static void MoveTo(Vector2* from, const Vector2& to);
+
+	static void ClampPosition(Vector2* outPosition, int borderX, int borderY);
 };
 
 

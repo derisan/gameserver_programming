@@ -14,16 +14,13 @@
     <Filter Include="Source Files\Scene">
       <UniqueIdentifier>{421353c2-f85f-4f25-aaa9-d1095783209a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Network">
+      <UniqueIdentifier>{2f2bb17d-d049-46c9-893b-d23fdc3eb29f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="PCH.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Client.cpp">
-      <Filter>Source Files\Core</Filter>
     </ClCompile>
     <ClCompile Include="Entity.cpp">
       <Filter>Source Files\ECS</Filter>
@@ -34,16 +31,13 @@
     <ClCompile Include="Scene.cpp">
       <Filter>Source Files\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="GameScene.cpp">
-      <Filter>Source Files\Scene</Filter>
-    </ClCompile>
     <ClCompile Include="TextureManager.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
     <ClCompile Include="Components.cpp">
       <Filter>Source Files\ECS</Filter>
     </ClCompile>
-    <ClCompile Include="Math.cpp">
+    <ClCompile Include="GSMath.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Systems.cpp">
@@ -52,13 +46,25 @@
     <ClCompile Include="Input.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
+    <ClCompile Include="SocketAddress.cpp">
+      <Filter>Source Files\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="SocketUtil.cpp">
+      <Filter>Source Files\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="TCPSocket.cpp">
+      <Filter>Source Files\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="GSID.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="MemoryStream.cpp">
+      <Filter>Source Files\Network</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PCH.h">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Client.h">
-      <Filter>Source Files\Core</Filter>
     </ClInclude>
     <ClInclude Include="Log.h">
       <Filter>Source Files\Core</Filter>
@@ -75,9 +81,6 @@
     <ClInclude Include="Scene.h">
       <Filter>Source Files\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="GameScene.h">
-      <Filter>Source Files\Scene</Filter>
-    </ClInclude>
     <ClInclude Include="Tags.h">
       <Filter>Source Files\ECS</Filter>
     </ClInclude>
@@ -87,11 +90,32 @@
     <ClInclude Include="Systems.h">
       <Filter>Source Files\ECS</Filter>
     </ClInclude>
-    <ClInclude Include="Math.h">
+    <ClInclude Include="GSMath.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Input.h">
       <Filter>Source Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="SocketAddress.h">
+      <Filter>Source Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="SocketUtil.h">
+      <Filter>Source Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="TCPSocket.h">
+      <Filter>Source Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="StringUtils.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GSID.h">
+      <Filter>Source Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="GameServer.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryStream.h">
+      <Filter>Source Files\Network</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

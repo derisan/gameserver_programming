@@ -14,12 +14,14 @@
 #pragma comment(lib, "zlib")
 #pragma comment(lib, "spdlog")
 
-
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
+#define SERVER_PORT (9000)
+#define SCREEN_WIDTH (640)
+#define SCREEN_HEIGHT (640)
 
-#include "Math.h"
+#include "GSMath.h"
 #include <Windows.h>
 #include <WinSock2.h>
 #include <WS2tcpip.h>
@@ -39,6 +41,7 @@
 #include <deque>
 
 using std::string;
+using std::wstring;
 using std::shared_ptr;
 using std::unique_ptr;
 using std::vector;

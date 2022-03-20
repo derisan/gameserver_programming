@@ -47,6 +47,7 @@ public:
 
 	operator entt::entity() const { return mEntityHandle; }
 	operator entt::entity() { return mEntityHandle; }
+	operator bool() const { return (mEntityHandle != entt::null) && mGame; }
 
 	bool operator==(const Entity& other) const
 	{

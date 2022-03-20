@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Game.h"
-
 class Scene;
 
 class Client : public Game
@@ -15,8 +13,6 @@ public:
 
 	int GetScreenWidth() const { return mScreenWidth; }
 	int GetScreenHeight() const { return mScreenHeight; }
-
-	Entity CreateEntity();
 
 private:
 	bool createWindow(const string& title, int width, int height);

@@ -6,8 +6,8 @@ void Systems::DrawSprite(const Vector2& position, const float rotation, const fl
 	SDL_Rect r;
 	r.w = static_cast<int>(texWidth * scale);
 	r.h = static_cast<int>(texHeight * scale);
-	r.x = static_cast<int>(position.x - r.w / 2);
-	r.y = static_cast<int>(position.y - r.h / 2);
+	r.x = static_cast<int>(position.x);
+	r.y = static_cast<int>(position.y);
 
 	SDL_RenderCopyEx(renderer, texture, nullptr, &r, -rotation, nullptr, SDL_FLIP_NONE);
 }
@@ -18,8 +18,14 @@ void Systems::Move(Vector2* from, const Vector2& dist)
 	from->y += dist.y;
 }
 
-void Systems::Reposition(Vector2* outPosition, int borderX, int borderY, int offset /*= 0.0f*/)
+void Systems::MoveTo(Vector2* from, const Vector2& to)
 {
-	outPosition->x = Math::Clamp(outPosition->x, static_cast<float>(offset), static_cast<float>(borderX - offset));
-	outPosition->y = Math::Clamp(outPosition->y, static_cast<float>(offset), static_cast<float>(borderY - offset));
+	from->x = to.x;
+	from->y = to.y;
+}
+
+void Systems::ClampPosition(Vector2* outPosition, int borderX, int borderY)
+{
+	outPosition->x = Math::Clamp(outPosition->x, 0.0f, static_cast<float>(borderX));
+	outPosition->y = Math::Clamp(outPosition->y, 0.0f, static_cast<float>(borderY));
 }

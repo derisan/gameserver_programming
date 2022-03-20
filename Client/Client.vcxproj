@@ -13,19 +13,19 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{79cd7828-3c7c-4809-8fa0-faa8024aaed5}</ProjectGuid>
-    <RootNamespace>gameserverprogramming</RootNamespace>
+    <ProjectGuid>{c33b6d4d-4993-41b6-8f76-e8e4f5a94476}</ProjectGuid>
+    <RootNamespace>Client</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -62,10 +62,10 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\vendor\include\</AdditionalIncludeDirectories>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>PCH.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>..\vendor\include\;..\gameserver_programming\</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>ClientPCH.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -73,8 +73,7 @@
       <AdditionalLibraryDirectories>..\vendor\lib\debug\</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>
-      </Command>
+      <Command>copy /Y "..\vendor\bin\debug\" "$(TargetDir)"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -85,10 +84,10 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\vendor\include\</AdditionalIncludeDirectories>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>PCH.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>..\vendor\include\;..\gameserver_programming\</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>ClientPCH.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -98,48 +97,27 @@
       <AdditionalLibraryDirectories>..\vendor\lib\release\</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>
-      </Command>
+      <Command>copy /Y "..\vendor\bin\release\" "$(TargetDir)"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Components.cpp" />
-    <ClCompile Include="Entity.cpp" />
-    <ClCompile Include="Game.cpp" />
-    <ClCompile Include="GSID.cpp" />
-    <ClCompile Include="Input.cpp" />
-    <ClCompile Include="GSMath.cpp" />
-    <ClCompile Include="MemoryStream.cpp" />
-    <ClCompile Include="PCH.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    <ClCompile Include="Client.cpp" />
+    <ClCompile Include="ClientMain.cpp" />
+    <ClCompile Include="ClientPCH.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Scene.cpp" />
-    <ClCompile Include="SocketAddress.cpp" />
-    <ClCompile Include="SocketUtil.cpp" />
-    <ClCompile Include="Systems.cpp" />
-    <ClCompile Include="TCPSocket.cpp" />
-    <ClCompile Include="TextureManager.cpp" />
+    <ClCompile Include="GameScene.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Components.h" />
-    <ClInclude Include="Entity.h" />
-    <ClInclude Include="Game.h" />
-    <ClInclude Include="GameServer.h" />
-    <ClInclude Include="GSID.h" />
-    <ClInclude Include="Input.h" />
-    <ClInclude Include="Log.h" />
-    <ClInclude Include="GSMath.h" />
-    <ClInclude Include="MemoryStream.h" />
-    <ClInclude Include="PCH.h" />
-    <ClInclude Include="Scene.h" />
-    <ClInclude Include="SocketAddress.h" />
-    <ClInclude Include="SocketUtil.h" />
-    <ClInclude Include="StringUtils.h" />
-    <ClInclude Include="Systems.h" />
-    <ClInclude Include="Tags.h" />
-    <ClInclude Include="TCPSocket.h" />
-    <ClInclude Include="TextureManager.h" />
+    <ClInclude Include="Client.h" />
+    <ClInclude Include="ClientPCH.h" />
+    <ClInclude Include="GameScene.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\gameserver_programming\gameserver_programming.vcxproj">
+      <Project>{79cd7828-3c7c-4809-8fa0-faa8024aaed5}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

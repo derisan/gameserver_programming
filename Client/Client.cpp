@@ -1,10 +1,7 @@
-#include "PCH.h"
+#include "ClientPCH.h"
 #include "Client.h"
 
 #include "GameScene.h"
-#include "TextureManager.h"
-#include "Entity.h"
-#include "Input.h"
 
 Client::Client()
 	: mWindow(nullptr)
@@ -20,9 +17,10 @@ Client::Client()
 
 bool Client::Init()
 {
+	SocketUtil::Init();
 	Input::Init();
 
-	bool success = createWindow("GameServerProgramming", 640, 640);
+	bool success = createWindow("GameServerProgramming", SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	if (!success)
 	{
@@ -67,12 +65,8 @@ void Client::Shutdown()
 	TextureManager::Shutdown();
 
 	SDL_Quit();
-}
 
-Entity Client::CreateEntity()
-{
-	Entity e(GetRegistry().create(), this);
-	return e;
+	SocketUtil::Shutdown();
 }
 
 bool Client::createWindow(const string& title, int width, int height)

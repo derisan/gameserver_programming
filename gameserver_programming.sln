@@ -5,6 +5,10 @@ VisualStudioVersion = 16.0.32106.194
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gameserver_programming", "gameserver_programming\gameserver_programming.vcxproj", "{79CD7828-3C7C-4809-8FA0-FAA8024AAED5}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Client", "Client\Client.vcxproj", "{C33B6D4D-4993-41B6-8F76-E8E4F5A94476}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Server", "Server\Server.vcxproj", "{019D4841-C7F5-4D91-A008-F0CF7F07DD88}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -15,6 +19,14 @@ Global
 		{79CD7828-3C7C-4809-8FA0-FAA8024AAED5}.Debug|x64.Build.0 = Debug|x64
 		{79CD7828-3C7C-4809-8FA0-FAA8024AAED5}.Release|x64.ActiveCfg = Release|x64
 		{79CD7828-3C7C-4809-8FA0-FAA8024AAED5}.Release|x64.Build.0 = Release|x64
+		{C33B6D4D-4993-41B6-8F76-E8E4F5A94476}.Debug|x64.ActiveCfg = Debug|x64
+		{C33B6D4D-4993-41B6-8F76-E8E4F5A94476}.Debug|x64.Build.0 = Debug|x64
+		{C33B6D4D-4993-41B6-8F76-E8E4F5A94476}.Release|x64.ActiveCfg = Release|x64
+		{C33B6D4D-4993-41B6-8F76-E8E4F5A94476}.Release|x64.Build.0 = Release|x64
+		{019D4841-C7F5-4D91-A008-F0CF7F07DD88}.Debug|x64.ActiveCfg = Debug|x64
+		{019D4841-C7F5-4D91-A008-F0CF7F07DD88}.Debug|x64.Build.0 = Debug|x64
+		{019D4841-C7F5-4D91-A008-F0CF7F07DD88}.Release|x64.ActiveCfg = Release|x64
+		{019D4841-C7F5-4D91-A008-F0CF7F07DD88}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

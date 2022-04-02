@@ -57,6 +57,13 @@ void Server::Run()
 	{
 		SOCKET client = WSAAccept(mListenSocket, reinterpret_cast<sockaddr*>(&clientAddr),
 			&addrsize, 0, 0);
+
+		if (clientID >= MAX_PLAYER_NUM)
+		{
+			closesocket(client);
+			continue;
+		}
+
 		gIdToSession.try_emplace(clientID, clientID, client);
 		gIdToSession[clientID].DoRecv();
 
@@ -147,10 +154,8 @@ void Server::processLoginRequest(MemoryStream* packet, Session& session)
 {
 	MemoryStream spacket;
 
-	spacket.WriteInt(static_cast<int32>(StCPacket::eLoginConfirmed));
-	spacket.WriteInt(session.GetClientID());
-
 	Entity piece = createEntity();
+	piece.AddTag<ChessPiece>();
 	auto& id = piece.GetComponent<IDComponent>();
 	auto& transform = piece.AddComponent<TransformComponent>();
 
@@ -158,6 +163,46 @@ void Server::processLoginRequest(MemoryStream* packet, Session& session)
 	spacket.WriteInt(session.GetClientID());
 	spacket.WriteUInt64(id.ID);
 	spacket.WriteVector2(transform.Position);
+
+	// 기존에 접속한 클라이언트들에게 새로 접속한 클라이언트의 정보를 보냄
+	for (auto& [_, s] : gIdToSession)
+	{
+		if (&s == &session)
+		{
+			continue;
+		}
+
+		s.DoSend(spacket);
+	}
+
+	spacket.Reset();
+	spacket.WriteInt(static_cast<int32>(StCPacket::eLoginConfirmed));
+	spacket.WriteInt(session.GetClientID());
+	spacket.WriteInt(static_cast<int32>(StCPacket::eCreatePiece));
+	spacket.WriteInt(session.GetClientID());
+	spacket.WriteUInt64(id.ID);
+	spacket.WriteVector2(transform.Position);
+	
+	// 본인의 피스를 제외한 다른 클라이언트들의 피스 정보를 패킷에 담음
+	auto view = GetRegistry().view<ChessPiece>();
+	for (auto entity : view)
+	{
+		if (entity == piece)
+		{
+			continue;
+		}
+
+		Entity e = Entity(entity, this);
+		auto& id = e.GetComponent<IDComponent>();
+		auto& transform = e.GetComponent<TransformComponent>();
+
+		spacket.WriteInt(static_cast<int32>(StCPacket::eCreatePiece));
+		spacket.WriteInt(DONT_CARE);
+		spacket.WriteUInt64(id.ID);
+		spacket.WriteVector2(transform.Position);
+	}
+
+	
 
 	session.DoSend(spacket);
 }

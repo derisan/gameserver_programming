@@ -21,6 +21,7 @@ void Game::RemoveEntity(const GSID& id)
 
 	if (iter != mEntities.end())
 	{
+		mRegistry.destroy(iter->second);
 		mEntities.erase(iter);
 	}
 	else

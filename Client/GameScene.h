@@ -20,6 +20,7 @@ private:
     void processCreatePiece(MemoryStream* outPacket);
     void processUpdatePosition(MemoryStream* outPacket);
     void processLoginConfirmed(MemoryStream* outPacket);
+    void processUserDisconnected(MemoryStream* outPacket);
 
 private:
     static GameScene sInstance;

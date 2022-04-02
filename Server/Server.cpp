@@ -12,8 +12,33 @@ void CALLBACK RecvCallback(DWORD err, DWORD numBytes, LPWSAOVERLAPPED over, DWOR
 	if (numBytes == 0)
 	{
 		GS_LOG("Client {0} disconnected!", clientID);
+
+		auto& ctp = gServer->GetClientToPiece();
+		GSID& pieceID = ctp[clientID];
+
+		// 다른 클라이언트에게 접속 종료 패킷 송신
+		MemoryStream packet;
+		packet.WriteInt(static_cast<int32>(StCPacket::eUserDisconnected));
+		packet.WriteUInt64(pieceID);
+
+		for (auto& [_, s] : gIdToSession)
+		{
+			if (s.GetClientID() == clientID)
+			{
+				continue;
+			}
+
+			s.DoSend(packet);
+		}
+
+		// 클라이언트 제거
 		gOverToID.erase(over);
 		gIdToSession.erase(clientID);
+
+		// 피스 제거
+		gServer->RemoveEntity(pieceID);
+		ctp.erase(clientID);
+
 		return;
 	}
 
@@ -95,16 +120,16 @@ void Server::ProcessPacket(MemoryStream* packet, Session& session)
 
 	while (packet->GetLength() < totalLen)
 	{
-		CtsPacket pType;
+		CtSPacket pType;
 		packet->ReadInt(reinterpret_cast<int32*>(&pType));
 
 		switch (pType)
 		{
-		case CtsPacket::eUserInput:
+		case CtSPacket::eUserInput:
 			processUserInput(packet, session);
 			break;
 
-		case CtsPacket::eLoginRequest:
+		case CtSPacket::eLoginRequest:
 			processLoginRequest(packet, session);
 			break;
 
@@ -164,10 +189,12 @@ void Server::processLoginRequest(MemoryStream* packet, Session& session)
 	spacket.WriteUInt64(id.ID);
 	spacket.WriteVector2(transform.Position);
 
+	mClientToPiece.try_emplace(session.GetClientID(), id.ID);
+
 	// 기존에 접속한 클라이언트들에게 새로 접속한 클라이언트의 정보를 보냄
 	for (auto& [_, s] : gIdToSession)
 	{
-		if (&s == &session)
+		if (s.GetClientID() == session.GetClientID())
 		{
 			continue;
 		}
@@ -201,8 +228,6 @@ void Server::processLoginRequest(MemoryStream* packet, Session& session)
 		spacket.WriteUInt64(id.ID);
 		spacket.WriteVector2(transform.Position);
 	}
-
-	
 
 	session.DoSend(spacket);
 }

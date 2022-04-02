@@ -5,9 +5,10 @@ enum class StCPacket
 	eLoginConfirmed,
 	eCreatePiece,
 	eUpdatePosition,
+	eUserDisconnected,
 };
 
-enum class CtsPacket
+enum class CtSPacket
 {
 	eLoginRequest,
 	eUserInput,

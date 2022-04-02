@@ -20,6 +20,8 @@ public:
 
 	void ProcessPacket(MemoryStream* packet, Session& session);
 
+	std::map<int32, GSID>& GetClientToPiece() { return mClientToPiece; }
+
 private:
 	Entity createEntity();
 
@@ -28,6 +30,8 @@ private:
 
 private:
 	SOCKET mListenSocket;
+
+	std::map<int32, GSID> mClientToPiece;
 };
 
 int GetChessBoardIndex(int position);

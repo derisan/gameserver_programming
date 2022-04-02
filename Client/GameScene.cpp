@@ -38,7 +38,7 @@ void GameScene::Enter()
 
 	// LoginRequest 패킷 송신
 	MemoryStream packet;
-	packet.WriteInt(static_cast<int32>(CtsPacket::eLoginRequest));
+	packet.WriteInt(static_cast<int32>(CtSPacket::eLoginRequest));
 	mClientSocket->Send(&packet, sizeof(packet));
 
 	// 체스보드판 생성
@@ -57,8 +57,6 @@ void GameScene::Exit()
 	GS_LOG("GameScene::Exit");
 
 	mClientSocket = nullptr;
-
-	mOwner->GetRegistry().clear();
 }
 
 void GameScene::ProcessInput()
@@ -101,7 +99,7 @@ void GameScene::ProcessInput()
 
 		auto& id = mMyPiece.GetComponent<IDComponent>();
 
-		packet.WriteInt(static_cast<int32>(CtsPacket::eUserInput));
+		packet.WriteInt(static_cast<int32>(CtSPacket::eUserInput));
 		packet.WriteUInt64(id.ID);
 		packet.WriteVector2(direction);
 
@@ -188,6 +186,10 @@ void GameScene::processPacket(MemoryStream* outPacket)
 			processLoginConfirmed(outPacket);
 			break;
 
+		case StCPacket::eUserDisconnected:
+			processUserDisconnected(outPacket);
+			break;
+
 		default:
 			GS_LOG("Unknown packet type!");
 			break;
@@ -253,5 +255,12 @@ void GameScene::processLoginConfirmed(MemoryStream* outPacket)
 	GS_LOG("my client id: {0}", myClientID);
 
 	mbLoginConfirmed = true;
+}
+
+void GameScene::processUserDisconnected(MemoryStream* outPacket)
+{
+	uint64 id = -1;
+	outPacket->ReadUInt64(&id);
+	mOwner->RemoveEntity(id);
 }
 

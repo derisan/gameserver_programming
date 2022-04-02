@@ -1,6 +1,7 @@
 #include "ServerPCH.h"
 #include "Server.h"
 
+#include "gameserver_programming/PacketType.h"
 
 bool Server::Init()
 {
@@ -16,9 +17,9 @@ void Server::Run()
 {
 	while (true)
 	{
-		MemoryStream buffer;
+		MemoryStream packet;
 
-		int retVal = mClientSocket->Recv(&buffer, sizeof(buffer));
+		int retVal = mClientSocket->Recv(&packet, sizeof(packet));
 
 		if (retVal == 0)
 		{
@@ -30,49 +31,17 @@ void Server::Run()
 			GS_LOG("Recv error");
 			break;
 		}
-
-		uint16 totalLen = buffer.GetLength();
-		buffer.SetLength(0);
-
-		uint64 id = 0;
-		buffer.ReadUInt64(&id);
-
-		int cls = 0;
-		buffer.ReadInt(&cls);
-
-		Vector2 direction = Vector2::Zero;
-		buffer.ReadVector2(&direction);
-
-		auto entity = GetEntityByID(id);
-
-		if (entity == entt::null)
+		else
 		{
-			GS_ASSERT(false, "Entity does not exist!");
-			break;
+			processPacket(&packet);
 		}
-
-		Entity e = Entity(entity, this);
-		auto& transform = e.GetComponent<TransformComponent>();
-
-		Systems::Move(&transform.Position, (SCREEN_WIDTH / 8) * direction);
-		Systems::ClampPosition(&transform.Position, SCREEN_WIDTH - kPieceWidth, SCREEN_HEIGHT - kPieceHeight);
-
-		buffer.Reset();
-		buffer.WriteUInt64(id);
-		buffer.WriteInt(cls);
-		buffer.WriteVector2(transform.Position);
-
-		GS_LOG("말의 위치: {0} {1}", GetChessBoardIndex(static_cast<int>(transform.Position.x)), 
-			GetChessBoardIndex(static_cast<int>(transform.Position.y)));
-
-		mClientSocket->Send(&buffer, sizeof(buffer));
 	}
 }
 
 void Server::Shutdown()
 {
 	mClientSocket = nullptr;
-
+	
 	SocketUtil::Shutdown();
 }
 
@@ -80,7 +49,6 @@ Entity Server::createEntity()
 {
 	Entity e(GetRegistry().create(), this);
 	auto& id = e.AddComponent<IDComponent>();
-
 	RegisterEntity(id.ID, e);
 
 	return e;
@@ -95,14 +63,14 @@ void Server::waitPlayer()
 
 	if (retVal == SOCKET_ERROR)
 	{
-		GS_ASSERT(false, "ASSERTION FAILED");
+		GS_ASSERT(false, "");
 	}
 
 	retVal = listenSocket->Listen();
 
 	if (retVal == SOCKET_ERROR)
 	{
-		GS_ASSERT(false, "ASSERTION FAILED");
+		GS_ASSERT(false, "");
 	}
 
 	SocketAddress clientAddr;
@@ -115,28 +83,74 @@ void Server::waitPlayer()
 
 void Server::initGameWorld()
 {
-	MemoryStream buffer;
-	{
-		Entity board = createEntity();
-		auto& transform = board.AddComponent<TransformComponent>();
-		auto& id = board.GetComponent<IDComponent>();
-
-		buffer.WriteUInt64(id.ID);
-		buffer.WriteInt('BORD');
-		buffer.WriteVector2(transform.Position);
-	}
+	MemoryStream packet;
 
 	{
 		Entity piece = createEntity();
-		auto& transform = piece.AddComponent<TransformComponent>();
 		auto& id = piece.GetComponent<IDComponent>();
+		auto& transform = piece.AddComponent<TransformComponent>();
 
-		buffer.WriteUInt64(id.ID);
-		buffer.WriteInt('PIEC');
-		buffer.WriteVector2(transform.Position);
+		packet.WriteInt(static_cast<int32>(StCPacket::eCreatePiece));
+		packet.WriteUInt64(id.ID);
+		packet.WriteVector2(transform.Position);
 	}
 
-	mClientSocket->Send(&buffer, sizeof(MemoryStream));
+	mClientSocket->Send(&packet, sizeof(MemoryStream));
+}
+
+void Server::processPacket(MemoryStream* packet)
+{
+	uint16 totalLen = packet->GetLength();
+	packet->SetLength(0);
+
+	while (packet->GetLength() < totalLen)
+	{
+		CtsPacket pType;
+		packet->ReadInt(reinterpret_cast<int32*>(&pType));
+
+		switch (pType)
+		{
+		case CtsPacket::eUserInput:
+			processUserInput(packet);
+			break;
+
+		default:
+			GS_LOG("Unknown packet type!");
+			break;
+		}
+	}
+}
+
+void Server::processUserInput(MemoryStream* packet)
+{
+	int64 id = -1;
+	packet->ReadInt64(&id);
+
+	auto entity = GetEntityByID(id);
+
+	if (entity == entt::null)
+	{
+		GS_ASSERT(false, "Entity does not exist!");
+	}
+
+	Vector2 direction = Vector2::Zero;
+	packet->ReadVector2(&direction);
+
+	Entity piece = Entity(entity, this);
+	auto& transform = piece.GetComponent<TransformComponent>();
+
+	Systems::Move(&transform.Position, (SCREEN_WIDTH / 8) * direction);
+	Systems::ClampPosition(&transform.Position, SCREEN_WIDTH - PIECE_WIDTH, SCREEN_HEIGHT - PIECE_HEIGHT);
+
+	GS_LOG("말의 위치: {0} {1}", GetChessBoardIndex(transform.Position.x), 
+		GetChessBoardIndex(transform.Position.y));
+
+	MemoryStream spacket;
+	spacket.WriteInt(static_cast<int32>(StCPacket::eUpdatePosition));
+	spacket.WriteInt64(id);
+	spacket.WriteVector2(transform.Position);
+
+	mClientSocket->Send(&spacket, sizeof(MemoryStream));
 }
 
 int GetChessBoardIndex(int position)

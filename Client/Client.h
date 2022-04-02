@@ -14,6 +14,10 @@ public:
 	int GetScreenWidth() const { return mScreenWidth; }
 	int GetScreenHeight() const { return mScreenHeight; }
 
+	Entity CreateEntityWithID(uint64 id);
+
+	void SetRunning(bool value) { mbRunning = value; }
+
 private:
 	bool createWindow(const string& title, int width, int height);
 	bool createScene();

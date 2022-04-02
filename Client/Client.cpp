@@ -69,6 +69,15 @@ void Client::Shutdown()
 	SocketUtil::Shutdown();
 }
 
+Entity Client::CreateEntityWithID(uint64 id)
+{
+	Entity e = Entity(GetRegistry().create(), this);
+	auto& idComp = e.AddComponent<IDComponent>(id);
+	RegisterEntity(id, e);
+
+	return e;
+}
+
 bool Client::createWindow(const string& title, int width, int height)
 {
 	mScreenWidth = width;

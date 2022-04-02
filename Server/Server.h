@@ -1,9 +1,7 @@
 #pragma once
 
-#include "Game.h"
-
-constexpr int kPieceWidth = 80;
-constexpr int kPieceHeight = 80;
+constexpr int PIECE_WIDTH = 80;
+constexpr int PIECE_HEIGHT = 80;
 
 class Server : public Game
 {
@@ -17,6 +15,9 @@ private:
 
 	void waitPlayer();
 	void initGameWorld();
+
+	void processPacket(MemoryStream* packet);
+	void processUserInput(MemoryStream* packet);
 
 private:
 	TCPSocketPtr mClientSocket;

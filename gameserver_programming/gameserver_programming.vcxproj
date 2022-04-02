@@ -131,6 +131,7 @@
     <ClInclude Include="Log.h" />
     <ClInclude Include="GSMath.h" />
     <ClInclude Include="MemoryStream.h" />
+    <ClInclude Include="PacketType.h" />
     <ClInclude Include="PCH.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SocketAddress.h" />

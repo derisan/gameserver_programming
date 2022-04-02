@@ -1,6 +1,8 @@
 #include "ClientPCH.h"
 #include "GameScene.h"
 
+#include "gameserver_programming/PacketType.h"
+
 #include "Client.h"
 
 GameScene GameScene::sInstance;
@@ -32,6 +34,15 @@ void GameScene::Enter()
 	}
 
 	mClientSocket->SetNonBlockingMode(1);
+
+	{
+		Entity board = mOwner->CreateEntityWithID(0);
+		board.AddTag<ChessBoard>();
+		board.AddComponent<TransformComponent>();
+		auto& spriteRenderer = board.AddComponent<SpriteRendererComponent>(TextureManager::GetTexture("../Assets/board.png"), 10);
+		spriteRenderer.Width = SCREEN_WIDTH;
+		spriteRenderer.Height = SCREEN_HEIGHT;
+	}
 }
 
 void GameScene::Exit()
@@ -78,8 +89,8 @@ void GameScene::ProcessInput()
 
 		auto& id = mMyPiece.GetComponent<IDComponent>();
 
+		packet.WriteInt(static_cast<int32>(CtsPacket::eUserInput));
 		packet.WriteUInt64(id.ID);
-		packet.WriteInt('PIEC');
 		packet.WriteVector2(direction);
 
 		mClientSocket->Send(&packet, sizeof(packet));
@@ -89,11 +100,29 @@ void GameScene::ProcessInput()
 void GameScene::Update(float deltaTime)
 {
 	MemoryStream packet;
-	mClientSocket->Recv(&packet, sizeof(packet));
+	int retVal = mClientSocket->Recv(&packet, sizeof(packet));
 
-	if (packet.GetLength() > 0)
+	if (retVal == SOCKET_ERROR)
+	{
+		int error = WSAGetLastError();
+
+		if (error == WSAEWOULDBLOCK)
+		{
+			return;
+		}
+		else
+		{
+			SocketUtil::ReportError(L"GameScene::Update", error);
+		}
+	}
+	else if (retVal > 0)
 	{
 		processPacket(&packet);
+	}
+	else
+	{
+		GS_LOG("Server down.");
+		mOwner->SetRunning(false);
 	}
 }
 
@@ -130,59 +159,64 @@ void GameScene::processPacket(MemoryStream* outPacket)
 
 	while (outPacket->GetLength() < totalLen)
 	{
-		uint64 id = 0;
-		outPacket->ReadUInt64(&id);
+		StCPacket pType;
+		outPacket->ReadInt(reinterpret_cast<int32*>(&pType));
 
-		int cls = 0;
-		outPacket->ReadInt(&cls);
-
-		Vector2 position = Vector2::Zero;
-		outPacket->ReadVector2(&position);
-
-		auto entity = mOwner->GetEntityByID(id);
-
-		Entity e;
-		if (entity == entt::null)
+		switch (pType)
 		{
-			e = Entity(mOwner->GetRegistry().create(), mOwner);
-			auto& idComp = e.AddComponent<IDComponent>(id);
-			mOwner->RegisterEntity(idComp.ID, e);
+		case StCPacket::eCreatePiece:
+			processCreatePiece(outPacket);
+			break;
 
-			switch (cls)
-			{
-			case 'BORD':
-			{
-				e.AddTag<ChessBoard>();
-				e.AddComponent<TransformComponent>();
-				auto& spriteRenderer = e.AddComponent<SpriteRendererComponent>(TextureManager::GetTexture("../Assets/board.png"), 10);
-				spriteRenderer.Width = SCREEN_WIDTH;
-				spriteRenderer.Height = SCREEN_HEIGHT;
-			}
-				break;
+		case StCPacket::eUpdatePosition:
+			processUpdatePosition(outPacket);
+			break;
 
-			case 'PIEC':
-			{
-				e.AddTag<ChessPiece>();
-				e.AddComponent<TransformComponent>();
-				auto& spriteRenderer = e.AddComponent<SpriteRendererComponent>(TextureManager::GetTexture("../Assets/knight.png"));
-				spriteRenderer.Width = SCREEN_WIDTH / 8;
-				spriteRenderer.Height = SCREEN_HEIGHT / 8;
-				mMyPiece = e;
-			}
-				break;
-
-			default:
-				GS_LOG("Unknown class type!");
-				break;
-			}
+		default:
+			GS_LOG("Unknown packet type!");
+			break;
 		}
-		else
-		{
-			e = Entity(entity, mOwner);
-		}
-
-		auto& transform = e.GetComponent<TransformComponent>();
-		Systems::MoveTo(&transform.Position, position);
 	}
+}
+
+void GameScene::processCreatePiece(MemoryStream* outPacket)
+{
+	uint64 id = 0;
+	outPacket->ReadUInt64(&id);
+	
+	Entity e = mOwner->CreateEntityWithID(id);
+	e.AddTag<ChessPiece>();
+
+	Vector2 position = Vector2::Zero;
+	outPacket->ReadVector2(&position);
+	auto& transform = e.AddComponent<TransformComponent>();
+	transform.Position = position;
+
+	auto& spriteRenderer = e.AddComponent<SpriteRendererComponent>(TextureManager::GetTexture("../Assets/knight.png"));
+	spriteRenderer.Width = SCREEN_WIDTH / 8;
+	spriteRenderer.Height = SCREEN_HEIGHT / 8;
+	mMyPiece = e;
+}
+
+void GameScene::processUpdatePosition(MemoryStream* outPacket)
+{
+	uint64 id = 0;
+	outPacket->ReadUInt64(&id);
+
+	Vector2 position = Vector2::Zero;
+	outPacket->ReadVector2(&position);
+
+	auto entity = mOwner->GetEntityByID(id);
+
+	if (entity == entt::null)
+	{
+		GS_LOG("Entity does not exist!");
+		mOwner->SetRunning(false);
+		return;
+	}
+
+	Entity piece = Entity(entity, mOwner);
+	auto& transform = piece.GetComponent<TransformComponent>();
+	transform.Position = position;
 }
 

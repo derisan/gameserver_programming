@@ -30,7 +30,9 @@ void GameScene::Enter()
 
 	if (retVal == SOCKET_ERROR)
 	{
-		GS_ASSERT(false, "ASSERTION FAILED");
+		SocketUtil::ReportError(L"GameScene::Enter");
+		mOwner->SetRunning(false);
+		return;
 	}
 
 	// 논블로킹 소켓으로 만듦
@@ -123,6 +125,8 @@ void GameScene::Update(float deltaTime)
 		else
 		{
 			SocketUtil::ReportError(L"GameScene::Update", error);
+			mOwner->SetRunning(false);
+			return;
 		}
 	}
 	else if (retVal > 0)

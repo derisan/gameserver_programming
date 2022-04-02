@@ -14,6 +14,8 @@ class Server : public Game
 	};
 
 public:
+	Server();
+
 	virtual bool Init() override;
 	virtual void Run() override;
 	virtual void Shutdown() override;
@@ -21,6 +23,7 @@ public:
 	void ProcessPacket(MemoryStream* packet, Session& session);
 
 	std::map<int32, GSID>& GetClientToPiece() { return mClientToPiece; }
+	std::list<int32>& GetAllClientIDs() { return mAvailableClientIDs; }
 
 private:
 	Entity createEntity();
@@ -32,6 +35,7 @@ private:
 	SOCKET mListenSocket;
 
 	std::map<int32, GSID> mClientToPiece;
+	std::list<int32> mAvailableClientIDs;
 };
 
 int GetChessBoardIndex(int position);

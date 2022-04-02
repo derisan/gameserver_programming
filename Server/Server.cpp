@@ -31,6 +31,9 @@ void CALLBACK RecvCallback(DWORD err, DWORD numBytes, LPWSAOVERLAPPED over, DWOR
 			s.DoSend(packet);
 		}
 
+		// 클라이언트 ID 반환
+		gServer->GetAllClientIDs().push_front(clientID);
+
 		// 클라이언트 제거
 		gOverToID.erase(over);
 		gIdToSession.erase(clientID);
@@ -38,7 +41,6 @@ void CALLBACK RecvCallback(DWORD err, DWORD numBytes, LPWSAOVERLAPPED over, DWOR
 		// 피스 제거
 		gServer->RemoveEntity(pieceID);
 		ctp.erase(clientID);
-
 		return;
 	}
 
@@ -53,6 +55,14 @@ void CALLBACK SendCallback(DWORD err, DWORD numBytes, LPWSAOVERLAPPED over, DWOR
 {
 	SendData* data = reinterpret_cast<SendData*>(over);
 	delete data;
+}
+
+Server::Server()
+{	
+	for (int i = 0; i < MAX_PLAYER_NUM; i++)
+	{
+		mAvailableClientIDs.push_back(i);
+	}
 }
 
 bool Server::Init()
@@ -76,24 +86,25 @@ void Server::Run()
 {
 	SOCKADDR_IN clientAddr;
 	int addrsize = sizeof(clientAddr);
-	int clientID = 0;
 
 	while (true)
 	{
 		SOCKET client = WSAAccept(mListenSocket, reinterpret_cast<sockaddr*>(&clientAddr),
 			&addrsize, 0, 0);
 
-		if (clientID >= MAX_PLAYER_NUM)
+		if (mAvailableClientIDs.empty())
 		{
 			closesocket(client);
 			continue;
 		}
 
+		int clientID = mAvailableClientIDs.front();
+		mAvailableClientIDs.pop_front();
+
 		gIdToSession.try_emplace(clientID, clientID, client);
 		gIdToSession[clientID].DoRecv();
 
 		GS_LOG("Client {0} connected.", clientID);
-		clientID++;
 	}
 }
 

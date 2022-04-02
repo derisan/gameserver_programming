@@ -19,12 +19,24 @@
     <ClCompile Include="Server.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
+    <ClCompile Include="ServerGlobal.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Session.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ServerPCH.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Server.h">
+      <Filter>Source Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Session.h">
+      <Filter>Source Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="ServerGlobal.h">
       <Filter>Source Files\Core</Filter>
     </ClInclude>
   </ItemGroup>

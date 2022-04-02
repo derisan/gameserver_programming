@@ -3,44 +3,73 @@
 
 #include "gameserver_programming/PacketType.h"
 
+#include "ServerGlobal.h"
+
+void CALLBACK RecvCallback(DWORD err, DWORD numBytes, LPWSAOVERLAPPED over, DWORD flags)
+{
+	int clientID = gOverToID[over];
+
+	if (numBytes == 0)
+	{
+		GS_LOG("Client {0} disconnected!", clientID);
+		gOverToID.erase(over);
+		gIdToSession.erase(clientID);
+		return;
+	}
+
+	auto& session = gIdToSession[clientID];
+	auto& packet = session.GetMess();
+	gServer->ProcessPacket(&packet, session);
+
+	session.DoRecv();
+}
+
+void CALLBACK SendCallback(DWORD err, DWORD numBytes, LPWSAOVERLAPPED over, DWORD flags)
+{
+	SendData* data = reinterpret_cast<SendData*>(over);
+	delete data;
+}
+
 bool Server::Init()
 {
 	SocketUtil::Init();
 
-	waitPlayer();
-	initGameWorld();
+	mListenSocket = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
+	SOCKADDR_IN serveraddr;
+	ZeroMemory(&serveraddr, sizeof(serveraddr));
+	serveraddr.sin_family = AF_INET;
+	serveraddr.sin_port = htons(SERVER_PORT);
+	serveraddr.sin_addr.s_addr = INADDR_ANY;
+
+	bind(mListenSocket, reinterpret_cast<sockaddr*>(&serveraddr), sizeof(serveraddr));
+	listen(mListenSocket, SOMAXCONN);
+
+	//initGameWorld();
 
 	return true;
 }
 
 void Server::Run()
 {
+	SOCKADDR_IN clientAddr;
+	int addrsize = sizeof(clientAddr);
+	int clientID = 0;
+
 	while (true)
 	{
-		MemoryStream packet;
+		SOCKET client = WSAAccept(mListenSocket, reinterpret_cast<sockaddr*>(&clientAddr),
+			&addrsize, 0, 0);
+		gIdToSession.try_emplace(clientID, clientID, client);
+		gIdToSession[clientID].DoRecv();
 
-		int retVal = mClientSocket->Recv(&packet, sizeof(packet));
-
-		if (retVal == 0)
-		{
-			GS_LOG("Client disconnected!");
-			break;
-		}
-		else if (retVal == SOCKET_ERROR)
-		{
-			GS_LOG("Recv error");
-			break;
-		}
-		else
-		{
-			processPacket(&packet);
-		}
+		GS_LOG("Client {0} connected.", clientID);
+		clientID++;
 	}
 }
 
 void Server::Shutdown()
 {
-	mClientSocket = nullptr;
+	closesocket(mListenSocket);
 	
 	SocketUtil::Shutdown();
 }
@@ -54,51 +83,24 @@ Entity Server::createEntity()
 	return e;
 }
 
-void Server::waitPlayer()
-{
-	TCPSocketPtr listenSocket = SocketUtil::CreateTCPSocket();
-	SocketAddress serveraddr(SERVER_PORT);
-
-	int retVal = listenSocket->Bind(serveraddr);
-
-	if (retVal == SOCKET_ERROR)
-	{
-		GS_ASSERT(false, "");
-	}
-
-	retVal = listenSocket->Listen();
-
-	if (retVal == SOCKET_ERROR)
-	{
-		GS_ASSERT(false, "");
-	}
-
-	SocketAddress clientAddr;
-	int clientNum = 0;
-
-	mClientSocket = listenSocket->Accept(&clientAddr);
-
-	GS_LOG("Client Connected: {0}", clientAddr.ToString());
-}
-
 void Server::initGameWorld()
 {
-	MemoryStream packet;
+	//MemoryStream packet;
 
-	{
-		Entity piece = createEntity();
-		auto& id = piece.GetComponent<IDComponent>();
-		auto& transform = piece.AddComponent<TransformComponent>();
+	//{
+	//	Entity piece = createEntity();
+	//	auto& id = piece.GetComponent<IDComponent>();
+	//	auto& transform = piece.AddComponent<TransformComponent>();
 
-		packet.WriteInt(static_cast<int32>(StCPacket::eCreatePiece));
-		packet.WriteUInt64(id.ID);
-		packet.WriteVector2(transform.Position);
-	}
+	//	packet.WriteInt(static_cast<int32>(StCPacket::eCreatePiece));
+	//	packet.WriteUInt64(id.ID);
+	//	packet.WriteVector2(transform.Position);
+	//}
 
-	mClientSocket->Send(&packet, sizeof(MemoryStream));
+	//mClientSocket->Send(&packet, sizeof(MemoryStream));
 }
 
-void Server::processPacket(MemoryStream* packet)
+void Server::ProcessPacket(MemoryStream* packet, Session& session)
 {
 	uint16 totalLen = packet->GetLength();
 	packet->SetLength(0);
@@ -114,6 +116,10 @@ void Server::processPacket(MemoryStream* packet)
 			processUserInput(packet);
 			break;
 
+		case CtsPacket::eLoginRequest:
+			processLoginRequest(packet, session);
+			break;
+
 		default:
 			GS_LOG("Unknown packet type!");
 			break;
@@ -123,34 +129,43 @@ void Server::processPacket(MemoryStream* packet)
 
 void Server::processUserInput(MemoryStream* packet)
 {
-	int64 id = -1;
-	packet->ReadInt64(&id);
+	//int64 id = -1;
+	//packet->ReadInt64(&id);
 
-	auto entity = GetEntityByID(id);
+	//auto entity = GetEntityByID(id);
 
-	if (entity == entt::null)
-	{
-		GS_ASSERT(false, "Entity does not exist!");
-	}
+	//if (entity == entt::null)
+	//{
+	//	GS_ASSERT(false, "Entity does not exist!");
+	//}
 
-	Vector2 direction = Vector2::Zero;
-	packet->ReadVector2(&direction);
+	//Vector2 direction = Vector2::Zero;
+	//packet->ReadVector2(&direction);
 
-	Entity piece = Entity(entity, this);
-	auto& transform = piece.GetComponent<TransformComponent>();
+	//Entity piece = Entity(entity, this);
+	//auto& transform = piece.GetComponent<TransformComponent>();
 
-	Systems::Move(&transform.Position, (SCREEN_WIDTH / 8) * direction);
-	Systems::ClampPosition(&transform.Position, SCREEN_WIDTH - PIECE_WIDTH, SCREEN_HEIGHT - PIECE_HEIGHT);
+	//Systems::Move(&transform.Position, (SCREEN_WIDTH / 8) * direction);
+	//Systems::ClampPosition(&transform.Position, SCREEN_WIDTH - PIECE_WIDTH, SCREEN_HEIGHT - PIECE_HEIGHT);
 
-	GS_LOG("말의 위치: {0} {1}", GetChessBoardIndex(transform.Position.x), 
-		GetChessBoardIndex(transform.Position.y));
+	//GS_LOG("말의 위치: {0} {1}", GetChessBoardIndex(transform.Position.x), 
+	//	GetChessBoardIndex(transform.Position.y));
 
+	//MemoryStream spacket;
+	//spacket.WriteInt(static_cast<int32>(StCPacket::eUpdatePosition));
+	//spacket.WriteInt64(id);
+	//spacket.WriteVector2(transform.Position);
+
+	//mClientSocket->Send(&spacket, sizeof(MemoryStream));
+}
+
+void Server::processLoginRequest(MemoryStream* packet, Session& session)
+{
 	MemoryStream spacket;
-	spacket.WriteInt(static_cast<int32>(StCPacket::eUpdatePosition));
-	spacket.WriteInt64(id);
-	spacket.WriteVector2(transform.Position);
 
-	mClientSocket->Send(&spacket, sizeof(MemoryStream));
+	spacket.WriteInt(static_cast<int32>(StCPacket::eLoginConfirmed));
+	spacket.WriteInt(session.GetClientID());
+	session.DoSend(spacket);
 }
 
 int GetChessBoardIndex(int position)

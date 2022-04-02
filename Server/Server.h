@@ -3,6 +3,8 @@
 constexpr int PIECE_WIDTH = 80;
 constexpr int PIECE_HEIGHT = 80;
 
+#include "Session.h"
+
 class Server : public Game
 {
 public:
@@ -10,17 +12,17 @@ public:
 	virtual void Run() override;
 	virtual void Shutdown() override;
 
+	void ProcessPacket(MemoryStream* packet, Session& session);
+
 private:
 	Entity createEntity();
-
-	void waitPlayer();
 	void initGameWorld();
 
-	void processPacket(MemoryStream* packet);
 	void processUserInput(MemoryStream* packet);
+	void processLoginRequest(MemoryStream* packet, Session& session);
 
 private:
-	TCPSocketPtr mClientSocket;
+	SOCKET mListenSocket;
 };
 
 int GetChessBoardIndex(int position);

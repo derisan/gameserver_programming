@@ -33,8 +33,15 @@ void GameScene::Enter()
 		GS_ASSERT(false, "ASSERTION FAILED");
 	}
 
+	// 논블로킹 소켓으로 만듦
 	mClientSocket->SetNonBlockingMode(1);
 
+	// LoginRequest 패킷 송신
+	MemoryStream packet;
+	packet.WriteInt(static_cast<int32>(CtsPacket::eLoginRequest));
+	mClientSocket->Send(&packet, sizeof(packet));
+
+	// 체스보드판 생성
 	{
 		Entity board = mOwner->CreateEntityWithID(0);
 		board.AddTag<ChessBoard>();
@@ -56,6 +63,11 @@ void GameScene::Exit()
 
 void GameScene::ProcessInput()
 {
+	if (!mbLoginConfirmed)
+	{
+		return;
+	}
+
 	Vector2 direction = Vector2::Zero;
 	bool isPressed = false;
 
@@ -157,10 +169,14 @@ void GameScene::processPacket(MemoryStream* outPacket)
 	uint16 totalLen = outPacket->GetLength();
 	outPacket->SetLength(0);
 
+	GS_LOG("packet size: {0}", totalLen);
+
 	while (outPacket->GetLength() < totalLen)
 	{
 		StCPacket pType;
 		outPacket->ReadInt(reinterpret_cast<int32*>(&pType));
+
+		GS_LOG("Pakcet Type: {0}", static_cast<int32>(pType));
 
 		switch (pType)
 		{
@@ -172,6 +188,10 @@ void GameScene::processPacket(MemoryStream* outPacket)
 			processUpdatePosition(outPacket);
 			break;
 
+		case StCPacket::eLoginConfirmed:
+			processLoginConfirmed(outPacket);
+			break;
+
 		default:
 			GS_LOG("Unknown packet type!");
 			break;
@@ -181,6 +201,9 @@ void GameScene::processPacket(MemoryStream* outPacket)
 
 void GameScene::processCreatePiece(MemoryStream* outPacket)
 {
+	int32 clientID = -1;
+	outPacket->ReadInt(&clientID);
+
 	uint64 id = 0;
 	outPacket->ReadUInt64(&id);
 	
@@ -200,6 +223,9 @@ void GameScene::processCreatePiece(MemoryStream* outPacket)
 
 void GameScene::processUpdatePosition(MemoryStream* outPacket)
 {
+	int32 clientID = -1;
+	outPacket->ReadInt(&clientID);
+
 	uint64 id = 0;
 	outPacket->ReadUInt64(&id);
 
@@ -218,5 +244,16 @@ void GameScene::processUpdatePosition(MemoryStream* outPacket)
 	Entity piece = Entity(entity, mOwner);
 	auto& transform = piece.GetComponent<TransformComponent>();
 	transform.Position = position;
+}
+
+void GameScene::processLoginConfirmed(MemoryStream* outPacket)
+{
+	int myClientID = -1;
+	outPacket->ReadInt(&myClientID);
+	mOwner->SetClientID(myClientID);
+
+	GS_LOG("my client id: {0}", myClientID);
+
+	mbLoginConfirmed = true;
 }
 

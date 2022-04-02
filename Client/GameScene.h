@@ -19,6 +19,7 @@ private:
     void processPacket(MemoryStream* outPacket);
     void processCreatePiece(MemoryStream* outPacket);
     void processUpdatePosition(MemoryStream* outPacket);
+    void processLoginConfirmed(MemoryStream* outPacket);
 
 private:
     static GameScene sInstance;
@@ -26,4 +27,6 @@ private:
     TCPSocketPtr mClientSocket;
 
     Entity mMyPiece;
+
+    bool mbLoginConfirmed = false;
 };

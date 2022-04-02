@@ -18,6 +18,9 @@ public:
 
 	void SetRunning(bool value) { mbRunning = value; }
 
+	void SetClientID(int id) { mClientID = id; }
+	int GetClientID() const { return mClientID; }
+
 private:
 	bool createWindow(const string& title, int width, int height);
 	bool createScene();
@@ -38,5 +41,7 @@ private:
 
 	int mScreenWidth;
 	int mScreenHeight;
+
+	int mClientID = -1;
 };
 

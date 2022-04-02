@@ -1,6 +1,6 @@
 #pragma once
 
-constexpr int PACKET_SIZE = 1350;
+constexpr int PACKET_SIZE = 200;
 
 class MemoryStream
 {

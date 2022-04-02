@@ -16,9 +16,8 @@ public:
 
 private:
 	Entity createEntity();
-	void initGameWorld();
 
-	void processUserInput(MemoryStream* packet);
+	void processUserInput(MemoryStream* packet, Session& session);
 	void processLoginRequest(MemoryStream* packet, Session& session);
 
 private:

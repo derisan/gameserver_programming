@@ -44,8 +44,6 @@ bool Server::Init()
 	bind(mListenSocket, reinterpret_cast<sockaddr*>(&serveraddr), sizeof(serveraddr));
 	listen(mListenSocket, SOMAXCONN);
 
-	//initGameWorld();
-
 	return true;
 }
 
@@ -70,7 +68,7 @@ void Server::Run()
 void Server::Shutdown()
 {
 	closesocket(mListenSocket);
-	
+
 	SocketUtil::Shutdown();
 }
 
@@ -81,23 +79,6 @@ Entity Server::createEntity()
 	RegisterEntity(id.ID, e);
 
 	return e;
-}
-
-void Server::initGameWorld()
-{
-	//MemoryStream packet;
-
-	//{
-	//	Entity piece = createEntity();
-	//	auto& id = piece.GetComponent<IDComponent>();
-	//	auto& transform = piece.AddComponent<TransformComponent>();
-
-	//	packet.WriteInt(static_cast<int32>(StCPacket::eCreatePiece));
-	//	packet.WriteUInt64(id.ID);
-	//	packet.WriteVector2(transform.Position);
-	//}
-
-	//mClientSocket->Send(&packet, sizeof(MemoryStream));
 }
 
 void Server::ProcessPacket(MemoryStream* packet, Session& session)
@@ -113,7 +94,7 @@ void Server::ProcessPacket(MemoryStream* packet, Session& session)
 		switch (pType)
 		{
 		case CtsPacket::eUserInput:
-			processUserInput(packet);
+			processUserInput(packet, session);
 			break;
 
 		case CtsPacket::eLoginRequest:
@@ -127,36 +108,39 @@ void Server::ProcessPacket(MemoryStream* packet, Session& session)
 	}
 }
 
-void Server::processUserInput(MemoryStream* packet)
+void Server::processUserInput(MemoryStream* packet, Session& session)
 {
-	//int64 id = -1;
-	//packet->ReadInt64(&id);
+	uint64 id = -1;
+	packet->ReadUInt64(&id);
 
-	//auto entity = GetEntityByID(id);
+	auto entity = GetEntityByID(id);
 
-	//if (entity == entt::null)
-	//{
-	//	GS_ASSERT(false, "Entity does not exist!");
-	//}
+	if (entity == entt::null)
+	{
+		GS_ASSERT(false, "Entity does not exist!");
+	}
 
-	//Vector2 direction = Vector2::Zero;
-	//packet->ReadVector2(&direction);
+	Vector2 direction = Vector2::Zero;
+	packet->ReadVector2(&direction);
 
-	//Entity piece = Entity(entity, this);
-	//auto& transform = piece.GetComponent<TransformComponent>();
+	Entity piece = Entity(entity, this);
+	auto& transform = piece.GetComponent<TransformComponent>();
 
-	//Systems::Move(&transform.Position, (SCREEN_WIDTH / 8) * direction);
-	//Systems::ClampPosition(&transform.Position, SCREEN_WIDTH - PIECE_WIDTH, SCREEN_HEIGHT - PIECE_HEIGHT);
+	Systems::Move(&transform.Position, (SCREEN_WIDTH / 8) * direction);
+	Systems::ClampPosition(&transform.Position, SCREEN_WIDTH - PIECE_WIDTH, SCREEN_HEIGHT - PIECE_HEIGHT);
 
-	//GS_LOG("말의 위치: {0} {1}", GetChessBoardIndex(transform.Position.x), 
-	//	GetChessBoardIndex(transform.Position.y));
+	GS_LOG("클라이언트[{0}] 말의 위치: {1} {2}", session.GetClientID(), GetChessBoardIndex(transform.Position.x), 
+		GetChessBoardIndex(transform.Position.y));
 
-	//MemoryStream spacket;
-	//spacket.WriteInt(static_cast<int32>(StCPacket::eUpdatePosition));
-	//spacket.WriteInt64(id);
-	//spacket.WriteVector2(transform.Position);
+	MemoryStream spacket;
+	spacket.WriteInt(static_cast<int32>(StCPacket::eUpdatePosition));
+	spacket.WriteUInt64(id);
+	spacket.WriteVector2(transform.Position);
 
-	//mClientSocket->Send(&spacket, sizeof(MemoryStream));
+	for (auto& [_, session] : gIdToSession)
+	{
+		session.DoSend(spacket);
+	}
 }
 
 void Server::processLoginRequest(MemoryStream* packet, Session& session)
@@ -165,6 +149,16 @@ void Server::processLoginRequest(MemoryStream* packet, Session& session)
 
 	spacket.WriteInt(static_cast<int32>(StCPacket::eLoginConfirmed));
 	spacket.WriteInt(session.GetClientID());
+
+	Entity piece = createEntity();
+	auto& id = piece.GetComponent<IDComponent>();
+	auto& transform = piece.AddComponent<TransformComponent>();
+
+	spacket.WriteInt(static_cast<int32>(StCPacket::eCreatePiece));
+	spacket.WriteInt(session.GetClientID());
+	spacket.WriteUInt64(id.ID);
+	spacket.WriteVector2(transform.Position);
+
 	session.DoSend(spacket);
 }
 

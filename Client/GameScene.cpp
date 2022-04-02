@@ -169,14 +169,10 @@ void GameScene::processPacket(MemoryStream* outPacket)
 	uint16 totalLen = outPacket->GetLength();
 	outPacket->SetLength(0);
 
-	GS_LOG("packet size: {0}", totalLen);
-
 	while (outPacket->GetLength() < totalLen)
 	{
 		StCPacket pType;
 		outPacket->ReadInt(reinterpret_cast<int32*>(&pType));
-
-		GS_LOG("Pakcet Type: {0}", static_cast<int32>(pType));
 
 		switch (pType)
 		{
@@ -208,6 +204,12 @@ void GameScene::processCreatePiece(MemoryStream* outPacket)
 	outPacket->ReadUInt64(&id);
 	
 	Entity e = mOwner->CreateEntityWithID(id);
+
+	if (clientID == mOwner->GetClientID())
+	{
+		mMyPiece = e;
+	}
+
 	e.AddTag<ChessPiece>();
 
 	Vector2 position = Vector2::Zero;
@@ -218,14 +220,10 @@ void GameScene::processCreatePiece(MemoryStream* outPacket)
 	auto& spriteRenderer = e.AddComponent<SpriteRendererComponent>(TextureManager::GetTexture("../Assets/knight.png"));
 	spriteRenderer.Width = SCREEN_WIDTH / 8;
 	spriteRenderer.Height = SCREEN_HEIGHT / 8;
-	mMyPiece = e;
 }
 
 void GameScene::processUpdatePosition(MemoryStream* outPacket)
 {
-	int32 clientID = -1;
-	outPacket->ReadInt(&clientID);
-
 	uint64 id = 0;
 	outPacket->ReadUInt64(&id);
 

@@ -11,7 +11,7 @@ void Game::RegisterEntity(const GSID& id, const entt::entity e)
 	}
 	else
 	{
-		mEntities.emplace(id, e);
+		mEntities.try_emplace(id, e);
 	}
 }
 

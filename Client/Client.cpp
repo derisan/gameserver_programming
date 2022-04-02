@@ -73,7 +73,7 @@ Entity Client::CreateEntityWithID(uint64 id)
 {
 	Entity e = Entity(GetRegistry().create(), this);
 	auto& idComp = e.AddComponent<IDComponent>(id);
-	RegisterEntity(id, e);
+	RegisterEntity(idComp.ID, e);
 
 	return e;
 }

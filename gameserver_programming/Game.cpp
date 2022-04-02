@@ -11,7 +11,7 @@ void Game::RegisterEntity(const GSID& id, const entt::entity e)
 	}
 	else
 	{
-		mEntities.emplace(id, e);
+		mEntities.try_emplace(id, e);
 	}
 }
 
@@ -21,6 +21,7 @@ void Game::RemoveEntity(const GSID& id)
 
 	if (iter != mEntities.end())
 	{
+		mRegistry.destroy(iter->second);
 		mEntities.erase(iter);
 	}
 	else

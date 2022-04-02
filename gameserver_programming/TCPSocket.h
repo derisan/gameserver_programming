@@ -20,7 +20,6 @@ public:
 
 	void SetNonBlockingMode(u_long mode);
 
-private:
 	TCPSocket(SOCKET sock)
 		: mSocket(sock) {}
 

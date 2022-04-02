@@ -62,11 +62,22 @@ void Client::Shutdown()
 		mActiveScene->Exit();
 	}
 
+	GetRegistry().clear();
+
 	TextureManager::Shutdown();
 
 	SDL_Quit();
 
 	SocketUtil::Shutdown();
+}
+
+Entity Client::CreateEntityWithID(uint64 id)
+{
+	Entity e = Entity(GetRegistry().create(), this);
+	auto& idComp = e.AddComponent<IDComponent>(id);
+	RegisterEntity(idComp.ID, e);
+
+	return e;
 }
 
 bool Client::createWindow(const string& title, int width, int height)
@@ -131,6 +142,7 @@ void Client::processInput()
 	if (keystate[SDL_SCANCODE_ESCAPE])
 	{
 		mbRunning = false;
+		return;
 	}
 
 	if (mActiveScene)
@@ -141,6 +153,11 @@ void Client::processInput()
 
 void Client::update()
 {
+	if (!mbRunning)
+	{
+		return;
+	}
+
 	while (!SDL_TICKS_PASSED(SDL_GetTicks(), mTicksCount + 16));
 
 	float deltaTime = (SDL_GetTicks() - mTicksCount) / 1000.0f;
@@ -159,6 +176,11 @@ void Client::update()
 
 void Client::render()
 {
+	if (!mbRunning)
+	{
+		return;
+	}
+
 	SDL_SetRenderDrawColor(mRenderer, 0, 0, 0, 255);
 	SDL_RenderClear(mRenderer);
 

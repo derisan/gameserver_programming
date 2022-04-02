@@ -1,77 +1,116 @@
 #include "ServerPCH.h"
 #include "Server.h"
 
+#include "gameserver_programming/PacketType.h"
+
+#include "ServerGlobal.h"
+
+void CALLBACK RecvCallback(DWORD err, DWORD numBytes, LPWSAOVERLAPPED over, DWORD flags)
+{
+	int clientID = gOverToID[over];
+
+	if (numBytes == 0)
+	{
+		GS_LOG("Client {0} disconnected!", clientID);
+
+		auto& ctp = gServer->GetClientToPiece();
+		GSID& pieceID = ctp[clientID];
+
+		// 다른 클라이언트에게 접속 종료 패킷 송신
+		MemoryStream packet;
+		packet.WriteInt(static_cast<int32>(StCPacket::eUserDisconnected));
+		packet.WriteUInt64(pieceID);
+
+		for (auto& [_, s] : gIdToSession)
+		{
+			if (s.GetClientID() == clientID)
+			{
+				continue;
+			}
+
+			s.DoSend(packet);
+		}
+
+		// 클라이언트 ID 반환
+		gServer->GetAllClientIDs().push_front(clientID);
+
+		// 클라이언트 제거
+		gOverToID.erase(over);
+		gIdToSession.erase(clientID);
+
+		// 피스 제거
+		gServer->RemoveEntity(pieceID);
+		ctp.erase(clientID);
+		return;
+	}
+
+	auto& session = gIdToSession[clientID];
+	auto& packet = session.GetMess();
+	gServer->ProcessPacket(&packet, session);
+
+	session.DoRecv();
+}
+
+void CALLBACK SendCallback(DWORD err, DWORD numBytes, LPWSAOVERLAPPED over, DWORD flags)
+{
+	SendData* data = reinterpret_cast<SendData*>(over);
+	delete data;
+}
+
+Server::Server()
+{	
+	for (int i = 0; i < MAX_PLAYER_NUM; i++)
+	{
+		mAvailableClientIDs.push_back(i);
+	}
+}
 
 bool Server::Init()
 {
 	SocketUtil::Init();
 
-	waitPlayer();
-	initGameWorld();
+	mListenSocket = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
+	SOCKADDR_IN serveraddr;
+	ZeroMemory(&serveraddr, sizeof(serveraddr));
+	serveraddr.sin_family = AF_INET;
+	serveraddr.sin_port = htons(SERVER_PORT);
+	serveraddr.sin_addr.s_addr = INADDR_ANY;
+
+	bind(mListenSocket, reinterpret_cast<sockaddr*>(&serveraddr), sizeof(serveraddr));
+	listen(mListenSocket, SOMAXCONN);
 
 	return true;
 }
 
 void Server::Run()
 {
+	SOCKADDR_IN clientAddr;
+	int addrsize = sizeof(clientAddr);
+
 	while (true)
 	{
-		MemoryStream buffer;
+		SOCKET client = WSAAccept(mListenSocket, reinterpret_cast<sockaddr*>(&clientAddr),
+			&addrsize, 0, 0);
 
-		int retVal = mClientSocket->Recv(&buffer, sizeof(buffer));
-
-		if (retVal == 0)
+		if (mAvailableClientIDs.empty())
 		{
-			GS_LOG("Client disconnected!");
-			break;
-		}
-		else if (retVal == SOCKET_ERROR)
-		{
-			GS_LOG("Recv error");
-			break;
+			closesocket(client);
+			continue;
 		}
 
-		uint16 totalLen = buffer.GetLength();
-		buffer.SetLength(0);
+		int clientID = mAvailableClientIDs.front();
+		mAvailableClientIDs.pop_front();
 
-		uint64 id = 0;
-		buffer.ReadUInt64(&id);
+		gIdToSession.try_emplace(clientID, clientID, client);
+		gIdToSession[clientID].DoRecv();
 
-		int cls = 0;
-		buffer.ReadInt(&cls);
-
-		Vector2 direction = Vector2::Zero;
-		buffer.ReadVector2(&direction);
-
-		auto entity = GetEntityByID(id);
-
-		if (entity == entt::null)
-		{
-			GS_ASSERT(false, "Entity does not exist!");
-			break;
-		}
-
-		Entity e = Entity(entity, this);
-		auto& transform = e.GetComponent<TransformComponent>();
-
-		Systems::Move(&transform.Position, (SCREEN_WIDTH / 8) * direction);
-		Systems::ClampPosition(&transform.Position, SCREEN_WIDTH - kPieceWidth, SCREEN_HEIGHT - kPieceHeight);
-
-		buffer.Reset();
-		buffer.WriteUInt64(id);
-		buffer.WriteInt(cls);
-		buffer.WriteVector2(transform.Position);
-
-		GS_LOG("말의 위치: {0} {1}", GetChessBoardIndex(static_cast<int>(transform.Position.x)), 
-			GetChessBoardIndex(static_cast<int>(transform.Position.y)));
-
-		mClientSocket->Send(&buffer, sizeof(buffer));
+		GS_LOG("Client {0} connected.", clientID);
 	}
 }
 
 void Server::Shutdown()
 {
-	mClientSocket = nullptr;
+	closesocket(mListenSocket);
 
 	SocketUtil::Shutdown();
 }
@@ -80,63 +119,128 @@ Entity Server::createEntity()
 {
 	Entity e(GetRegistry().create(), this);
 	auto& id = e.AddComponent<IDComponent>();
-
 	RegisterEntity(id.ID, e);
 
 	return e;
 }
 
-void Server::waitPlayer()
+void Server::ProcessPacket(MemoryStream* packet, Session& session)
 {
-	TCPSocketPtr listenSocket = SocketUtil::CreateTCPSocket();
-	SocketAddress serveraddr(SERVER_PORT);
+	uint16 totalLen = packet->GetLength();
+	packet->SetLength(0);
 
-	int retVal = listenSocket->Bind(serveraddr);
-
-	if (retVal == SOCKET_ERROR)
+	while (packet->GetLength() < totalLen)
 	{
-		GS_ASSERT(false, "ASSERTION FAILED");
+		CtSPacket pType;
+		packet->ReadInt(reinterpret_cast<int32*>(&pType));
+
+		switch (pType)
+		{
+		case CtSPacket::eUserInput:
+			processUserInput(packet, session);
+			break;
+
+		case CtSPacket::eLoginRequest:
+			processLoginRequest(packet, session);
+			break;
+
+		default:
+			GS_LOG("Unknown packet type!");
+			break;
+		}
 	}
-
-	retVal = listenSocket->Listen();
-
-	if (retVal == SOCKET_ERROR)
-	{
-		GS_ASSERT(false, "ASSERTION FAILED");
-	}
-
-	SocketAddress clientAddr;
-	int clientNum = 0;
-
-	mClientSocket = listenSocket->Accept(&clientAddr);
-
-	GS_LOG("Client Connected: {0}", clientAddr.ToString());
 }
 
-void Server::initGameWorld()
+void Server::processUserInput(MemoryStream* packet, Session& session)
 {
-	MemoryStream buffer;
-	{
-		Entity board = createEntity();
-		auto& transform = board.AddComponent<TransformComponent>();
-		auto& id = board.GetComponent<IDComponent>();
+	uint64 id = -1;
+	packet->ReadUInt64(&id);
 
-		buffer.WriteUInt64(id.ID);
-		buffer.WriteInt('BORD');
-		buffer.WriteVector2(transform.Position);
+	auto entity = GetEntityByID(id);
+
+	if (entity == entt::null)
+	{
+		GS_ASSERT(false, "Entity does not exist!");
 	}
 
-	{
-		Entity piece = createEntity();
-		auto& transform = piece.AddComponent<TransformComponent>();
-		auto& id = piece.GetComponent<IDComponent>();
+	Vector2 direction = Vector2::Zero;
+	packet->ReadVector2(&direction);
 
-		buffer.WriteUInt64(id.ID);
-		buffer.WriteInt('PIEC');
-		buffer.WriteVector2(transform.Position);
+	Entity piece = Entity(entity, this);
+	auto& transform = piece.GetComponent<TransformComponent>();
+
+	Systems::Move(&transform.Position, (SCREEN_WIDTH / 8) * direction);
+	Systems::ClampPosition(&transform.Position, SCREEN_WIDTH - PIECE_WIDTH, SCREEN_HEIGHT - PIECE_HEIGHT);
+
+	GS_LOG("클라이언트[{0}] 말의 위치: {1} {2}", session.GetClientID(), GetChessBoardIndex(transform.Position.x), 
+		GetChessBoardIndex(transform.Position.y));
+
+	MemoryStream spacket;
+	spacket.WriteInt(static_cast<int32>(StCPacket::eUpdatePosition));
+	spacket.WriteUInt64(id);
+	spacket.WriteVector2(transform.Position);
+
+	for (auto& [_, session] : gIdToSession)
+	{
+		session.DoSend(spacket);
+	}
+}
+
+void Server::processLoginRequest(MemoryStream* packet, Session& session)
+{
+	MemoryStream spacket;
+
+	Entity piece = createEntity();
+	piece.AddTag<ChessPiece>();
+	auto& id = piece.GetComponent<IDComponent>();
+	auto& transform = piece.AddComponent<TransformComponent>();
+
+	spacket.WriteInt(static_cast<int32>(StCPacket::eCreatePiece));
+	spacket.WriteInt(session.GetClientID());
+	spacket.WriteUInt64(id.ID);
+	spacket.WriteVector2(transform.Position);
+
+	mClientToPiece.try_emplace(session.GetClientID(), id.ID);
+
+	// 기존에 접속한 클라이언트들에게 새로 접속한 클라이언트의 정보를 보냄
+	for (auto& [_, s] : gIdToSession)
+	{
+		if (s.GetClientID() == session.GetClientID())
+		{
+			continue;
+		}
+
+		s.DoSend(spacket);
 	}
 
-	mClientSocket->Send(&buffer, sizeof(MemoryStream));
+	spacket.Reset();
+	spacket.WriteInt(static_cast<int32>(StCPacket::eLoginConfirmed));
+	spacket.WriteInt(session.GetClientID());
+	spacket.WriteInt(static_cast<int32>(StCPacket::eCreatePiece));
+	spacket.WriteInt(session.GetClientID());
+	spacket.WriteUInt64(id.ID);
+	spacket.WriteVector2(transform.Position);
+	
+	// 본인의 피스를 제외한 다른 클라이언트들의 피스 정보를 패킷에 담음
+	auto view = GetRegistry().view<ChessPiece>();
+	for (auto entity : view)
+	{
+		if (entity == piece)
+		{
+			continue;
+		}
+
+		Entity e = Entity(entity, this);
+		auto& id = e.GetComponent<IDComponent>();
+		auto& transform = e.GetComponent<TransformComponent>();
+
+		spacket.WriteInt(static_cast<int32>(StCPacket::eCreatePiece));
+		spacket.WriteInt(DONT_CARE);
+		spacket.WriteUInt64(id.ID);
+		spacket.WriteVector2(transform.Position);
+	}
+
+	session.DoSend(spacket);
 }
 
 int GetChessBoardIndex(int position)

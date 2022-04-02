@@ -14,12 +14,10 @@ public:
 	entt::registry& GetRegistry() { return mRegistry; }
 
 	void RegisterEntity(const GSID& id, const entt::entity e);
-
 	void RemoveEntity(const GSID& id);
 
-	size_t GetNumEntites() const { return mEntities.size(); }
-
 	entt::entity GetEntityByID(const GSID& id) const;
+	size_t GetNumEntites() const { return mEntities.size(); }
 
 private:
 	entt::registry mRegistry;

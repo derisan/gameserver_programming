@@ -1,17 +1,21 @@
 #include "ServerPCH.h"
 
 #include "Server.h"
+#include "ServerGlobal.h"
 
 int main()
 {
-	unique_ptr<Server> server = std::make_unique<Server>();
+	gServer = new Server;
 
-	bool success = server->Init();
+	bool success = gServer->Init();
 
 	if (success)
 	{
-		server->Run();
+		gServer->Run();
 	}
 
-	server->Shutdown();
+	gServer->Shutdown();
+
+	delete gServer;
+	gServer = nullptr;
 }

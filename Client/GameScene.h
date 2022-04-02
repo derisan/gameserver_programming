@@ -1,8 +1,5 @@
 #pragma once
 
-#include "Scene.h"
-#include "Entity.h"
-
 class GameScene :
     public Scene
 {
@@ -20,6 +17,10 @@ private:
     GameScene(Client* client = nullptr);
 
     void processPacket(MemoryStream* outPacket);
+    void processCreatePiece(MemoryStream* outPacket);
+    void processUpdatePosition(MemoryStream* outPacket);
+    void processLoginConfirmed(MemoryStream* outPacket);
+    void processUserDisconnected(MemoryStream* outPacket);
 
 private:
     static GameScene sInstance;
@@ -27,4 +28,6 @@ private:
     TCPSocketPtr mClientSocket;
 
     Entity mMyPiece;
+
+    bool mbLoginConfirmed = false;
 };
